@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Isolated preload research</title>
+<script>
+researchFixture.report('first-page-script');
+requestAnimationFrame(()=>researchFixture.report('first-page-raf'));
+new PerformanceObserver(list=>{for(const e of list.getEntries())if(e.name==='first-paint')researchFixture.report('first-paint-observed',e.startTime)}).observe({type:'paint',buffered:true});
+</script></head><body><aside class="app-shell-left-panel"><button>Fixture</button></aside><main class="main-surface"><textarea aria-label="Fixture input"></textarea></main></body></html>

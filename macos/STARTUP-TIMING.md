@@ -1,5 +1,7 @@
 # 啟動量測與選用早期注入（0.3.2／0.3.3）
 
+2026-11-05 研究轉向：依使用者指示暫停 `--early-document` 優化，保留 baseline 與既有版本。本輪不修改排程／動畫或發布；Mac 原生早期入口研究見 [research/early-loading/README.md](research/early-loading/README.md)，沒有將外部注入標成原生等效。
+
 使用者實機回報：主題與自動開屏都晚於官方視窗顯示。**這個問題尚未取得新版本的實機時間線，也未宣稱已消除閃現或完成加速。** 本輪代理沒有啟動、連線或操作受限 ChatGPT；瀏覽器量測全部來自新建的隔離 headless Chrome。
 
 0.3.3 已分析兩份實機 trace：early 因 Runtime.enable 等待與 watchdog 中止，未登記 script，並非摘要漏記；目前只加詳細 gate／retry 診斷，baseline 預設與排程不變。結論及下一輪步驟見 [STARTUP-TRACE-ANALYSIS.md](STARTUP-TRACE-ANALYSIS.md)。以下 0.3.2 隔離結果不能視為實機 early 已成功。

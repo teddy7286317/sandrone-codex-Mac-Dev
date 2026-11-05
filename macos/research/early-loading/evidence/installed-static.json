@@ -1,0 +1,331 @@
+{
+  "bundle": {
+    "id": "com.openai.codex",
+    "version": "26.1027.30824",
+    "main": ".vite/build/early-bootstrap.js",
+    "asarSha256": "36bf3d2b35e95e11852074b9ca9459b89efbecd6b8311345d060cf66de8f0ba6",
+    "asarHeaderSha256": "a452d061300e76daf2f9e32a08b74b7d6ea6a54a3c4e4665cf1ee5f1f1ef5ce2",
+    "embeddedAsarIntegrity": {
+      "Resources/app.asar": {
+        "algorithm": "SHA256",
+        "hash": "a452d061300e76daf2f9e32a08b74b7d6ea6a54a3c4e4665cf1ee5f1f1ef5ce2"
+      }
+    },
+    "frameworkSha256": "3e97c7605a57927741f918bdb55c1f63c9b37d3549133386e472ca38e097a76a"
+  },
+  "fuses": {
+    "offset": 228308554,
+    "version": 1,
+    "length": 9,
+    "rawBytes": [
+      48,
+      49,
+      48,
+      48,
+      49,
+      49,
+      48,
+      48,
+      49
+    ],
+    "states": {
+      "RunAsNode": "disabled",
+      "EnableCookieEncryption": "enabled",
+      "EnableNodeOptionsEnvironmentVariable": "disabled",
+      "EnableNodeCliInspectArguments": "disabled",
+      "EnableEmbeddedAsarIntegrityValidation": "enabled",
+      "OnlyLoadAppFromAsar": "enabled",
+      "LoadBrowserProcessSpecificV8Snapshot": "disabled",
+      "GrantFileProtocolExtraPrivileges": "disabled",
+      "WasmTrapHandlers": "enabled"
+    }
+  },
+  "resourceSealEntries": {
+    "Resources/app.asar": {
+      "present": true,
+      "sha256MatchesResourceSeal": true
+    },
+    "Resources/native/sparkle.node": {
+      "present": true,
+      "sha256MatchesResourceSeal": true
+    },
+    "Resources/native/windows-updater.node": {
+      "present": false,
+      "sha256MatchesResourceSeal": null
+    }
+  },
+  "nativeModules": [
+    "airpods-mute.node",
+    "bare-modifier-monitor",
+    "browser-use-peer-authorization.node",
+    "devicecheck.node",
+    "dictation-ducking",
+    "hid-topology-watcher.node",
+    "input-monitoring-permission.node",
+    "launch-services-helper",
+    "remote-control-device-key.node",
+    "remote-hosted-pip",
+    "sky.node",
+    "sparkle.node",
+    "system-audio-spectrum",
+    "usb_webauthn.node"
+  ],
+  "sparkleSha256": "db732b143f945ffe3f7344afd445f2ce7ea556899e6864df26e721db8a318930",
+  "pluginDirectory": [
+    "CodexDockTilePlugin.docktileplugin"
+  ],
+  "dockTilePlugin": "CodexDockTilePlugin.docktileplugin",
+  "codesignVerification": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "/Applications/ChatGPT.app: invalid signature (code or signature have been modified)\nIn architecture: arm64"
+  },
+  "scannedSourceFiles": [
+    {
+      "file": ".vite/build/early-bootstrap-133-a2b781596743bab7.js",
+      "bytes": 116010,
+      "sha256": "35629d1aabe19b3ebb2833d126f70f858778eb5252c29778b1aa93dee2167855",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-176-b90ab24410ad8a64.js",
+      "bytes": 1949,
+      "sha256": "27a4b5a8a511b1a67ec223e0070b4cccbed5eda4a89f1d0617131eb714c1f0d6",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-207-66119f5cf12d75af.js",
+      "bytes": 778,
+      "sha256": "bb31fb003db25996f6e958cc48fa45ea81ba51a642aca7e0c736f9c65547310a",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-300-69db72387423034f.js",
+      "bytes": 1886,
+      "sha256": "856269468bd8e72377a3d10214de03c9efb36943589d0369edc62ad7830446d4",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-307-9bcb932e39eb0d85.js",
+      "bytes": 49153,
+      "sha256": "47514abe946d0f8ff5ca8346a4f6854626778465433b63e4d81b424ca30c6737",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-337-586c97155defdf81.js",
+      "bytes": 9721,
+      "sha256": "a89bca3343386ab0d41e6fae0418f95e596ea219d36d038ca65810b1df325a38",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-339-aea964a206c655e4.js",
+      "bytes": 1443708,
+      "sha256": "2c67d735b4465fd07dc5fca7c5e9429b1ccd100a53ed010bb8e9cd13efbdec7e",
+      "byteOffsets": {
+        "registerPreloadScript": [
+          1372627,
+          1372651
+        ],
+        "setPreloads": [
+          1372729
+        ],
+        "PreloadInjection": [
+          1371940
+        ],
+        "sparkle.node": [
+          94333
+        ],
+        "windows-updater.node": [
+          240491
+        ],
+        "registerSchemesAsPrivileged": [
+          1393304,
+          1393349,
+          1393399
+        ],
+        "loadURL(": [
+          124303
+        ],
+        "getPath(\"userData\")": [
+          59632,
+          129428,
+          180821,
+          188149,
+          205897,
+          206159,
+          206484,
+          1279440
+        ]
+      }
+    },
+    {
+      "file": ".vite/build/early-bootstrap-419-5406bfdc3b67ecd2.js",
+      "bytes": 209763,
+      "sha256": "ecaca2d9d37f2cd402cddfe870c90080e5eaaa92eca10509cf20c30cce2c64c7",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-489-d14000510e6df180.js",
+      "bytes": 345,
+      "sha256": "a732d6a750859d06e9fc7f02d0d99c7b07f0f3f471421c133c2384515d59cfa1",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-650-4571f48b702da54a.js",
+      "bytes": 2819,
+      "sha256": "7b7d8dc43a3814fe23949ec394f0938f15553ac52a7358e3bd1f708ad09a43db",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-683-32f0505ceefc29e1.js",
+      "bytes": 29349,
+      "sha256": "923df0a34d9f7749e62d7f85a8a999fdd4fa806eec3cc4b62f788944d3f089d4",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-824-3c24dda6dba622ec.js",
+      "bytes": 289705,
+      "sha256": "c387296475ca0729e4be35c4831b512d39316e0f7e24fe4d631ad0d96ec8e13f",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-87-929aa7e5d829f2a8.js",
+      "bytes": 525657,
+      "sha256": "661efcccb0760112eb604a8bb30d848747ade45fcbd99923c9d4bb8f7afe88a2",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-887-fa7954b0aa68776a.js",
+      "bytes": 658,
+      "sha256": "38b7655b2314be510c81f7510993ec962858bcf4e81c2cc2dd0b7f5ab88328d4",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-904-874f3ee469784cb4.js",
+      "bytes": 1692,
+      "sha256": "e1e03185926982715ca55604c3e6a2c2c74853ddc0f93a1fbce5ca9fda3ed17f",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap-916-2f6483d5bfd826f1.js",
+      "bytes": 5267529,
+      "sha256": "b50821d3723b10548c3321b9615140b8599033299c2890203c44b86ea7184e16",
+      "byteOffsets": {
+        "/@fs": [
+          752153,
+          3033509
+        ],
+        "preload:this.options.preloadPath": [
+          4301749
+        ],
+        "new ea.BrowserWindow": [
+          3575854,
+          4184179,
+          4198722,
+          4212107,
+          4302889
+        ],
+        "show:u": [
+          4300767,
+          4302581
+        ],
+        "loadURL(": [
+          2065255,
+          2066702,
+          2066761,
+          2067223,
+          2070077,
+          2070426,
+          2177577,
+          2355146,
+          2603687,
+          2616472,
+          2616549,
+          2616587,
+          2622354,
+          3578924,
+          4184822,
+          4199318,
+          4212599,
+          4280609,
+          4319204,
+          4324417,
+          4325607,
+          4327957,
+          4328855,
+          4337113,
+          4337238,
+          4337687
+        ],
+        "getPath(\"userData\")": [
+          304305,
+          473519,
+          2699434,
+          4088578,
+          4092336,
+          4101508,
+          4105987,
+          4423819
+        ]
+      }
+    },
+    {
+      "file": ".vite/build/early-bootstrap-986-87c3be43ee83aacf.js",
+      "bytes": 254193,
+      "sha256": "41cacf17296d1ea473e294d22d72e739460e1af4bd6fca4b993ff5c8b92f0d50",
+      "byteOffsets": {}
+    },
+    {
+      "file": ".vite/build/early-bootstrap.js",
+      "bytes": 605616,
+      "sha256": "5a4fe13a7371e73302b1cf10b54a035d16a77692ddb1c8de3c28c1c7e6fc5071",
+      "byteOffsets": {
+        "protocol.handle(\"app\"": [
+          1054
+        ],
+        "registerSchemesAsPrivileged": [
+          225
+        ],
+        "Accept-Ranges": [
+          3796
+        ],
+        "Content-Range": [
+          4402,
+          4601
+        ],
+        "/@fs": [
+          183
+        ]
+      }
+    }
+  ],
+  "schema": 1,
+  "checkedDate": "2026-11-05",
+  "scope": "Static read-only bundle inspection; no installed application code executed or live process accessed",
+  "upstreamCommit": "dfea82e39d9d4a42524dc9eed3d61204254d0d3a",
+  "productionBaseCommit": "4e349a85a476db30da115c90dab52edb7f840b0b",
+  "signatureCaveat": "Local codesign verification failed; this is not an authenticated pristine distribution reference. Resource hash matches do not establish publisher authenticity.",
+  "entitlementsObservation": {
+    "displayExitCode": 0,
+    "hardenedRuntimeFlagObserved": true,
+    "teamId": "2DC432GLL2",
+    "keychainAccessGroups": [
+      "2DC432GLL2.*",
+      "2DC432GLL2.com.openai.shared"
+    ],
+    "notObserved": [
+      "com.apple.security.cs.disable-library-validation",
+      "com.apple.security.cs.allow-dyld-environment-variables",
+      "com.apple.security.get-task-allow"
+    ]
+  },
+  "upstreamFileHashes": {
+    "native-integration/bridge.c": "956d1189cfc23b7cf04d9106e7ab52e2a392facd1243baacde3aabb78e8be256",
+    "native-integration/build.ps1": "953b50a59be276b6fb7ce396842e5d154b8bfb47adf01d62ef9a13a9ffe458b7",
+    "native-integration/runtime/main.cjs": "52fead6e12e537c550f4953fe4944ffda3259a97a4d6787fdf5a550ef530b1e9",
+    "native-integration/runtime/startup.cjs": "b0ffc8ef792bf541c18f8a284063d6348b7a0c1e5864c57a99301b9994b21bfe",
+    "native-integration/runtime/startup-preload.cjs": "b5c4731413292430967b89a3c842f4fe214f14521676c7e7cc1d5c8992ae0be9",
+    "native-integration/runtime/integration.cjs": "3ee72fcfeff35b5f971d56f86ae7a302b0814e05de2a1083cf7fe5a1f5a9c1b7"
+  },
+  "inspectorSourceSha256": "134ba4971bb5187239460c4197cd6e8208fdf239ee0a6e402fd627866d1ccd64"
+}

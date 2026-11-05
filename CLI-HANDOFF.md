@@ -1,5 +1,7 @@
 # 本輪接續狀態（2026-11-05）
 
+最新指示：保留現有可用版，暫停 --early-document 優化。本輪僅進行 Mac 早期載入唯讀研究與獨立 Electron 原型，不升版、不修改官方安裝／產品引擎、不合併 main、不發布。研究結論：session preload 與本地影片在自有 Mac Electron 可行，但尚未找到不改官方包／簽名／防護的官方 main 早期入口，不能宣稱與 Windows 原生整合等效。證據、取捨與原型見 [macos/research/early-loading/README.md](macos/research/early-loading/README.md)。既有實機通過與待驗收範圍維持原樣。
+
 目前工作樹為真正 fork 的 `SandroneCodex-Mac`，分支 `macos/original-engine-integration`，保留上游歷史。`origin/main` 與已 fetch 的 `upstream/main` 均為 `dfea82e39d9d4a42524dc9eed3d61204254d0d3a`。舊 `SandroneCodex-Source` 保留，未從它複製舊引擎蓋過新版。
 
 本輪已完成離線程式整合：原版 loadPayload / verifySession、opening-client 分塊準備／快取／顯示／釋放、Mac 正常 header 排列的重播按鈕、Cocoa 打包、獨立離線合成頁與手動診斷。原版 renderer / opening-client / native-ui.css / assets / vendor / theme 均未修改。撤回的 macos-theme.css 維持停用，程式不載入。

@@ -1,0 +1,316 @@
+{
+  "schema": 1,
+  "pass": true,
+  "scope": "Owned isolated Electron fixture; no installed ChatGPT code or profile loaded; hidden window, not native first-visible acceptance",
+  "versions": {
+    "electron": "45.2.3",
+    "chrome": "156.0.8078.80",
+    "node": "24.22.2",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "profile": "fresh temporary userData/sessionData/logs, no login",
+  "security": {
+    "sandbox": true,
+    "contextIsolation": true,
+    "nodeIntegration": false,
+    "webSecurity": true,
+    "externalNetworkBlocked": true
+  },
+  "checks": [
+    "real-registerPreloadScript-before-navigation",
+    "original-upstream-preload-and-player",
+    "session-handshake-before-host-preload-cover-before-page-script-and-first-raf",
+    "mounted-before-measured-renderer-first-paint",
+    "actual-local-h264-decoded-frame",
+    "real-200-206-prefix-suffix-416-and-404",
+    "session-partition-negative-control",
+    "unregister-negative-control",
+    "no-backend-means-not-ready"
+  ],
+  "video": {
+    "ready": "false",
+    "videoWidth": 1920,
+    "videoHeight": 1080,
+    "paused": false,
+    "urlScheme": "app:",
+    "posterEmbedded": true,
+    "mountedAtMs": 31.80000000447035
+  },
+  "rangeProbeContext": "main process session.fetch; renderer video independently requested bytes=0-",
+  "ranges": [
+    {
+      "range": null,
+      "status": 200,
+      "bytes": 3401375,
+      "contentRange": null
+    },
+    {
+      "range": "bytes=0-31",
+      "status": 206,
+      "bytes": 32,
+      "contentRange": "bytes 0-31/3401375"
+    },
+    {
+      "range": "bytes=-16",
+      "status": 206,
+      "bytes": 16,
+      "contentRange": "bytes 3401359-3401374/3401375"
+    },
+    {
+      "range": "bytes=999999999-",
+      "status": 416,
+      "bytes": 0,
+      "contentRange": "bytes */3401375"
+    },
+    {
+      "denied": 404
+    }
+  ],
+  "sourceHashes": {
+    "native-integration/runtime/startup.cjs": "b0ffc8ef792bf541c18f8a284063d6348b7a0c1e5864c57a99301b9994b21bfe",
+    "native-integration/runtime/startup-preload.cjs": "b5c4731413292430967b89a3c842f4fe214f14521676c7e7cc1d5c8992ae0be9",
+    "assets/motion/sandrone-startup-intro.mp4": "f94076ea5c3d318ba4dc607fcb744f221bfc1a7822e7e14c1e8d994d7d0f7baa"
+  },
+  "events": [
+    {
+      "event": "app.ready",
+      "atMs": 52.306
+    },
+    {
+      "event": "startup-preload-registered",
+      "atMs": 64.792
+    },
+    {
+      "event": "preload.list.confirmed",
+      "atMs": 64.838,
+      "count": 1
+    },
+    {
+      "event": "navigation.start",
+      "atMs": 130.333,
+      "case": "early"
+    },
+    {
+      "event": "startup-document-created",
+      "atMs": 160.157
+    },
+    {
+      "event": "fixture.session-bootstrap",
+      "atMs": 160.293,
+      "case": "early"
+    },
+    {
+      "event": "fixture.host-preload",
+      "atMs": 160.93,
+      "case": "early",
+      "cover": false
+    },
+    {
+      "event": "startup-screen-mounted",
+      "atMs": 164.331
+    },
+    {
+      "event": "fixture.first-page-script",
+      "atMs": 165.785,
+      "case": "early",
+      "cover": true
+    },
+    {
+      "event": "fixture.first-page-raf",
+      "atMs": 170.089,
+      "case": "early",
+      "cover": true
+    },
+    {
+      "event": "fixture.first-paint-observed",
+      "atMs": 239.571,
+      "case": "early",
+      "cover": true
+    },
+    {
+      "event": "startup-first-video-frame",
+      "atMs": 258.533
+    },
+    {
+      "event": "startup-progress-10100",
+      "atMs": 262.838
+    },
+    {
+      "event": "navigation.start",
+      "atMs": 297.07,
+      "case": "other-session"
+    },
+    {
+      "event": "fixture.host-preload",
+      "atMs": 351.467,
+      "case": "other-session",
+      "cover": false
+    },
+    {
+      "event": "fixture.first-page-script",
+      "atMs": 354.012,
+      "case": "other-session",
+      "cover": false
+    },
+    {
+      "event": "fixture.first-page-raf",
+      "atMs": 359.873,
+      "case": "other-session",
+      "cover": false
+    },
+    {
+      "event": "navigation.start",
+      "atMs": 387.803,
+      "case": "unregistered"
+    },
+    {
+      "event": "fixture.first-paint-observed",
+      "atMs": 393.343,
+      "case": "other-session",
+      "cover": false
+    },
+    {
+      "event": "fixture.host-preload",
+      "atMs": 440.448,
+      "case": "unregistered",
+      "cover": false
+    },
+    {
+      "event": "fixture.first-page-script",
+      "atMs": 441.781,
+      "case": "unregistered",
+      "cover": false
+    },
+    {
+      "event": "fixture.first-page-raf",
+      "atMs": 448.728,
+      "case": "unregistered",
+      "cover": false
+    }
+  ],
+  "reports": [
+    {
+      "event": "host-preload",
+      "cover": false,
+      "readyState": "loading",
+      "rendererMs": 30.5,
+      "case": "early"
+    },
+    {
+      "event": "first-page-script",
+      "cover": true,
+      "readyState": "loading",
+      "rendererMs": 35.400000005960464,
+      "case": "early"
+    },
+    {
+      "event": "first-page-raf",
+      "cover": true,
+      "readyState": "interactive",
+      "rendererMs": 38.30000000447035,
+      "case": "early"
+    },
+    {
+      "event": "first-paint-observed",
+      "cover": true,
+      "readyState": "interactive",
+      "rendererMs": 109.10000000149012,
+      "paintStartMs": 108,
+      "case": "early"
+    },
+    {
+      "event": "host-preload",
+      "cover": false,
+      "readyState": "loading",
+      "rendererMs": 54.399999998509884,
+      "case": "other-session"
+    },
+    {
+      "event": "first-page-script",
+      "cover": false,
+      "readyState": "loading",
+      "rendererMs": 56,
+      "case": "other-session"
+    },
+    {
+      "event": "first-page-raf",
+      "cover": false,
+      "readyState": "complete",
+      "rendererMs": 62.79999999701977,
+      "case": "other-session"
+    },
+    {
+      "event": "first-paint-observed",
+      "cover": false,
+      "readyState": "complete",
+      "rendererMs": 93.29999999701977,
+      "paintStartMs": 92,
+      "case": "other-session"
+    },
+    {
+      "event": "host-preload",
+      "cover": false,
+      "readyState": "loading",
+      "rendererMs": 52.600000001490116,
+      "case": "unregistered"
+    },
+    {
+      "event": "first-page-script",
+      "cover": false,
+      "readyState": "loading",
+      "rendererMs": 53.5,
+      "case": "unregistered"
+    },
+    {
+      "event": "first-page-raf",
+      "cover": false,
+      "readyState": "complete",
+      "rendererMs": 60.900000005960464,
+      "case": "unregistered"
+    }
+  ],
+  "requests": [
+    {
+      "case": "early",
+      "name": "sandrone-startup-intro.mp4",
+      "status": 206,
+      "range": "bytes=0-",
+      "bytes": 3401375
+    },
+    {
+      "case": "early",
+      "name": "sandrone-startup-intro.mp4",
+      "status": 200,
+      "range": null,
+      "bytes": 3401375
+    },
+    {
+      "case": "early",
+      "name": "sandrone-startup-intro.mp4",
+      "status": 206,
+      "range": "bytes=0-31",
+      "bytes": 32
+    },
+    {
+      "case": "early",
+      "name": "sandrone-startup-intro.mp4",
+      "status": 206,
+      "range": "bytes=-16",
+      "bytes": 16
+    },
+    {
+      "case": "early",
+      "name": "sandrone-startup-intro.mp4",
+      "status": 416,
+      "range": "bytes=999999999-",
+      "bytes": 0
+    }
+  ],
+  "nativeWindowFirstVisibleMs": null,
+  "researchSourceHashes": {
+    "prototype.cjs": "a23a09bab6a71df74d945d71c63bd0f68b184f17b4c049f67234a8109392d133",
+    "fixture-preload.cjs": "9171a6fab320076a281a9e194a06490b9559c9533f758a531c133bdb5c4be147",
+    "fixture.html": "11c3afeccb72a0059837322dcececfbb980d7539e4815a3b4c3f0270d06b0439"
+  }
+}

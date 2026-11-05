@@ -45,3 +45,9 @@
 目前為**部分實機驗收通過**，不是全面通過或完整 macOS 移植完成。未回報項目繼續保留待測狀態。
 
 測試命令及手動步驟見 [README.md](README.md)。Windows 原生附加包不屬於 Mac 成果，未執行 Windows／PowerShell 測試。
+
+## Mac 早期載入架構研究（沒有新產品版本）
+
+依使用者指示暫停 --early-document 優化，保留可用版本。獨立 Electron 45.2.3 原型通過真正 session preload、原版播放器、本地 H.264 解碼、同文件掛載早於 first-paint、Range 與不同 session／解除登記反向對照。這些只驗證自有合成 app，沒有載入官方程式、profile 或連線官方除錯介面；沒有偽造 app-server 就緒。官方原生首次可見、早期主題、登入、更新與等效整合均未驗收。未修改產品引擎或現有包，不提升產品版本。
+
+靜態檢查找到內部 Sentry session preload、固定路徑 Sparkle、Range 媒體路由及限制 fuse，但未找到第三方可用的導航前 main 入口。本機 codesign verify 回報失敗，原因未判定，不能將該副本視為完整原廠簽名基準；未修復或重簽。具體證據與各方案影響見 [研究報告](research/early-loading/README.md)。現有實機驗收狀態不擴大。
