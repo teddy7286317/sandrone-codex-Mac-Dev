@@ -87,3 +87,10 @@
 - 原版驗證與撤回保留；停用與退出移除早期 script、observer 和媒體，註冊失敗仍恢復 target。
 - 隔離對照只證明合成頁的次序，試跑總耗時有波動；不宣稱實機加速或消除官方視窗先顯示。動畫長度與原版等待上限不變。
 - 先前實機確認與其他待驗收項目保留，候選仍須由使用者手動比較 trace。
+
+## 0.3.3：實機 trace 分析與診斷補強
+
+- 確認 early 在 Runtime.enable／watchdog 階段中止，沒有執行 Page.addScriptToEvaluateOnNewDocument；不是摘要漏記或全域 unsupported fallback。
+- 拆解 baseline 6.338 秒與 early 7.484 秒，列出每次 audit／重試，舊資料的具體 gate 條件保持未知。
+- 補每輪分類、每次結構快照、命令耗時／錯誤及喚醒原因；摘要區分登記狀態與缺失證據。
+- 本輪不改 baseline 預設、輪詢間隔、early 指令順序、watchdog、動畫、原版 verifier 或撤回機制；尚未修復實機延遲。

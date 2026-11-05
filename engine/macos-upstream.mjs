@@ -6,6 +6,7 @@ import {openingAssets} from './assets.mjs';
 import {prepareOpening,showOpening,releaseOpening} from './opening-client.mjs';
 import {removeNativeUi,setStartupPhase} from './renderer.mjs';
 import {installMacUi,removeMacUi} from './macos-ui.mjs';
+import {readinessDecision,safeGateSnapshot} from './macos-startup-diagnostics.mjs';
 import {modeToggleAuditEntries} from './macos-controls.mjs';
 const root=new URL('../',import.meta.url);
 export const originalContract=JSON.parse(await fs.readFile(new URL('vendor/dream-skin/windows/assets/selectors.json',root),'utf8'));
@@ -18,15 +19,21 @@ export function auditSurface(entries) {
  // Allowlisted geometry, counts and colors only: no text, HTML, values or URLs.
  const describe=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {width:Math.round(r.width),height:Math.round(r.height),inViewport:r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight,background:s.backgroundColor,color:s.color,opacity:s.opacity,display:s.display,visibility:s.visibility,borderColor:s.borderColor,outlineColor:s.outlineColor,outlineStyle:s.outlineStyle,outlineWidth:s.outlineWidth,outlineOffset:s.outlineOffset,pressed:e.getAttribute?.('aria-pressed')??null,focusVisible:e.matches?.(':focus-visible')??false,hovered:e.matches?.(':hover')??false};};
  const visible=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight&&s.display!=='none'&&s.visibility!=='hidden'&&s.contentVisibility!=='hidden'&&Number(s.opacity)!==0;};
+ const gateKeys=new Set(['shell-main','left-panel','header-tint','home-icon','composer-chrome']);
+ const gateNode=e=>{
+  const r=e.getBoundingClientRect(),s=getComputedStyle(e),blocked=new Set();let n=e,depth=0;
+  while(n&&depth++<32){const a=getComputedStyle(n);if(a.display==='none')blocked.add('DISPLAY_NONE');if(a.visibility==='hidden'||a.visibility==='collapse')blocked.add('VISIBILITY_HIDDEN');if(a.contentVisibility==='hidden')blocked.add('CONTENT_HIDDEN');if(Number(a.opacity)===0)blocked.add('OPACITY_ZERO');n=n.parentElement;}
+  return {width:Math.round(r.width),height:Math.round(r.height),inViewport:r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight,display:s.display,visibility:s.visibility,contentVisibility:s.contentVisibility,opacity:Number(s.opacity),ancestorBlockers:[...blocked],ancestorScanTruncated:Boolean(n)};
+ };
  const matches=entries.map(({key,selector,tier,scope})=>{
   const elements=Array.from(document.querySelectorAll(selector)),active=elements.filter(e=>!e.closest('[data-app-shell-active-page="false"]')),shown=active.filter(visible);
-  return {key,tier,scope,count:elements.length,active:active.length,visible:shown.length,samples:shown.slice(0,3).map(e=>{
+  return {key,tier,scope,count:elements.length,active:active.length,visible:shown.length,...(gateKeys.has(key)?{gateNodes:active.slice(0,3).map(gateNode)}:{}),samples:shown.slice(0,3).map(e=>{
    const backgrounds=[];for(let a=e;a&&backgrounds.length<6;a=a.parentElement)backgrounds.push(getComputedStyle(a).backgroundColor);
    return {...describe(e),backgrounds};
   })};
  });
  const cache=window.__SANDRONE_MEDIA_CACHE__;
- return {matches,visibility:document.visibilityState,viewport:{width:innerWidth,height:innerHeight},version:window.__CODEX_DREAM_SKIN_STATE__?.version??null,
+ return {matches,visibility:document.visibilityState,readyState:document.readyState,viewport:{width:innerWidth,height:innerHeight},version:window.__CODEX_DREAM_SKIN_STATE__?.version??null,
   skin:document.documentElement?.getAttribute('data-dream-skin')??null,opening:{stage:window.__SANDRONE_OPENING_STATE__?.stage??null,reason:window.__SANDRONE_OPENING_STATE__?.reason??null,cached:Boolean(cache&&!cache.disposed),videos:[cache?.color,cache?.trace].filter(Boolean).map(v=>({paused:v.paused,readyState:v.readyState,width:v.videoWidth,height:v.videoHeight,hasSource:Boolean(v.getAttribute('src'))}))},replay:{present:Boolean(document.getElementById('sandrone-mac-replay')),hidden:document.getElementById('sandrone-mac-replay')?.hidden??true}};
 }
 export async function prepareOriginalTheme({opening=true}={}){
@@ -58,21 +65,17 @@ export async function applyOriginalTheme({session,targetId,resources,verify=veri
  trace('audit.start',{target:targetId});
  const audit=await auditOriginalTargets(session);
  trace('audit.end',{target:targetId});
- if(audit.visibility==='hidden'||!audit.matches.find(e=>e.key==='shell-main'&&e.visible>0))return {pass:false,reason:'MAIN_SURFACE_UNMATCHED',audit};
- // Early provisional CSS may precede React's header/composer. Wait for those
- // structural landmarks before asking the unchanged original verifier; never
- // treat a failed verification as success or play an opening while waiting.
- if(reusePreparedTheme){
-  const visible=key=>audit.matches.some(e=>e.key===key&&e.visible>0);
-  const home=audit.matches.some(e=>e.key==='home-icon'&&(e.active??e.count??0)>0);
-  if(!['shell-main','left-panel','header-tint'].every(visible)||(home&&!visible('composer-chrome')))return {pass:false,reason:'RENDERER_NOT_READY',audit};
- }
+ const decision=readinessDecision(audit,reusePreparedTheme);
+ trace('readiness.result',{target:targetId,pass:decision.pass,code:decision.code,gate:decision.gate,blockers:decision.blockers,snapshot:safeGateSnapshot(audit)});
+ if(!decision.pass)return {pass:false,reason:decision.code,audit};
  const {loaded,css,assets}=resources;
  const guard=()=>{if(isCancelled())throw Object.assign(new Error('Theme operation cancelled'),{code:'THEME_CANCELLED'});};
  let preparation;
  try {
   guard();
+  trace('theme.preflight.start',{target:targetId});
   await session.evaluate(`(()=>{window.__SANDRONE_MAC_BACKGROUND__?.dispose?.();window.__CODEX_DREAM_SKIN_DISABLED__=false;})()`);
+  trace('theme.preflight.end',{target:targetId});
   guard();
   // Prepare media alongside original theme installation. Consume rejection
   // immediately; rollback below cancels renderer preparation before returning.

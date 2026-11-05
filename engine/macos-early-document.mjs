@@ -47,20 +47,21 @@ export async function installEarlyTargets(browser,{source,trace,wake=()=>{},iden
  const pages=new Map(),jobs=new Set();let enabled=true,closed=false;
  const eligible=info=>info?.type==='page'&&(!info.url||info.url==='about:blank'||/^app:\/\//.test(info.url))&&!/pet-overlay|avatar-overlay/.test(info.url||'');
  const sourceBytes=Buffer.byteLength(source);
- const run=async(id,method,params={},timeout=3000)=>{const began=performance.now();try{return await browser.sendTo(id,method,params,timeout);}finally{trace('hook.command',{target:pages.get(id)?.info.targetId,code:method,durationMs:performance.now()-began,...(method==='Page.addScriptToEvaluateOnNewDocument'?{bytes:sourceBytes}:{})});}};
+ const run=async(id,method,params={},timeout=3000)=>{const began=performance.now();let pass=false,errorCode,cdpCode;trace('hook.command.start',{target:pages.get(id)?.info.targetId,code:method});try{const result=await browser.sendTo(id,method,params,timeout);pass=true;return result;}catch(error){errorCode=error.code;cdpCode=error.cdpCode;throw error;}finally{trace('hook.command',{target:pages.get(id)?.info.targetId,code:method,pass,errorCode,cdpCode,durationMs:performance.now()-began,...(method==='Page.addScriptToEvaluateOnNewDocument'?{bytes:sourceBytes}:{})});}};
+ const abort=(page)=>{const code=!enabled?'DISABLED':closed?'CLOSED':page.cancelled?'PAUSE_DEADLINE':null;if(code)trace('hook.registration-aborted',{target:page.info.targetId,code});return Boolean(code);};
  async function register(id,page){
-  if(!enabled||closed||!eligible(page.info)||page.script)return;
+  if(!enabled||closed||!eligible(page.info)||page.script){trace('hook.registration-skipped',{target:page.info.targetId,code:!enabled?'DISABLED':closed?'CLOSED':page.script?'ALREADY_REGISTERED':'INELIGIBLE_TARGET'});return;}
   await identity();trace('hook.register.start',{target:page.info.targetId});
   await run(id,'Runtime.enable');
-  if(!enabled||closed||page.cancelled)return;
+  if(abort(page))return;
   await run(id,'Runtime.addBinding',{name:'sandroneStartup'});
-  if(!enabled||closed||page.cancelled)return;
+  if(abort(page))return;
   await run(id,'Page.enable');
-  if(!enabled||closed||page.cancelled)return;
+  if(abort(page))return;
   // A document-start registration covers future navigations. Run the same
   // guarded bootstrap once in the current document when attachment was late.
   const result=await run(id,'Page.addScriptToEvaluateOnNewDocument',{source});page.script=result.identifier;page.owned=true;
-  if(!enabled||closed||page.cancelled){await run(id,'Page.removeScriptToEvaluateOnNewDocument',{identifier:page.script});page.script=null;return;}
+  if(abort(page)){await run(id,'Page.removeScriptToEvaluateOnNewDocument',{identifier:page.script});page.script=null;return;}
   if(!page.waiting)await run(id,'Runtime.evaluate',{expression:source,returnByValue:true,awaitPromise:false});
   trace('hook.registered',{target:page.info.targetId,capturedBeforeScripts:page.waiting});
  }
@@ -68,18 +69,18 @@ export async function installEarlyTargets(browser,{source,trace,wake=()=>{},iden
   if(method==='Target.attachedToTarget'){
    const page={info:params.targetInfo,waiting:params.waitingForDebugger,script:null,cancelled:false};pages.set(params.sessionId,page);
    trace('renderer.attached',{target:page.info.targetId,capturedBeforeScripts:Boolean(page.waiting)});
-   const emergency=page.waiting?setTimeout(()=>{page.cancelled=true;trace('hook.pause-deadline',{target:page.info.targetId});run(params.sessionId,'Runtime.runIfWaitingForDebugger').catch(()=>{});wake();},1500):null;
-   const job=(async()=>{try{await register(params.sessionId,page);}catch{trace('hook.registration-failed',{target:page.info.targetId});}finally{clearTimeout(emergency);try{await run(params.sessionId,'Runtime.runIfWaitingForDebugger');page.waiting=false;trace('renderer.resumed',{target:page.info.targetId});}catch{trace('hook.resume-failed',{target:page.info.targetId});}wake();}})();jobs.add(job);job.finally(()=>jobs.delete(job));
+   const emergency=page.waiting?setTimeout(()=>{page.cancelled=true;trace('hook.pause-deadline',{target:page.info.targetId});run(params.sessionId,'Runtime.runIfWaitingForDebugger').catch(()=>{});wake('hook.pause-deadline');},1500):null;
+   const job=(async()=>{try{await register(params.sessionId,page);}catch{trace('hook.registration-failed',{target:page.info.targetId});}finally{clearTimeout(emergency);try{await run(params.sessionId,'Runtime.runIfWaitingForDebugger');page.waiting=false;trace('renderer.resumed',{target:page.info.targetId});}catch{trace('hook.resume-failed',{target:page.info.targetId});}wake('renderer.resumed');}})();jobs.add(job);job.finally(()=>jobs.delete(job));
   }
   if(method==='Target.detachedFromTarget')pages.delete(params.sessionId);
   if(method==='Runtime.bindingCalled'&&params.name==='sandroneStartup'&&pages.has(sessionId)){
    try{const value=JSON.parse(params.payload);if(!earlyPhaseNames.has(value.phase))return;
     if(!Number.isFinite(value.rendererMs)||!Number.isFinite(value.rendererTimeOrigin))return;
-    trace(value.phase,{target:pages.get(sessionId).info.targetId,rendererMs:value.rendererMs,rendererTimeOrigin:value.rendererTimeOrigin,rendererUnixMs:value.rendererTimeOrigin+value.rendererMs});wake();
+    trace(value.phase,{target:pages.get(sessionId).info.targetId,rendererMs:value.rendererMs,rendererTimeOrigin:value.rendererTimeOrigin,rendererUnixMs:value.rendererTimeOrigin+value.rendererMs});wake(value.phase);
    }catch{}
   }
   if(method==='Target.targetCreated'||method==='Target.targetInfoChanged'||method==='Target.targetDestroyed'){
-   if(method==='Target.targetCreated'&&params.targetInfo?.type==='page')trace('renderer.target.discovered',{target:params.targetInfo.targetId});wake();
+   if(method==='Target.targetCreated'&&params.targetInfo?.type==='page')trace('renderer.target.discovered',{target:params.targetInfo.targetId});wake(method);
   }
  };
  const unsubscribe=browser.onEvent(listener);

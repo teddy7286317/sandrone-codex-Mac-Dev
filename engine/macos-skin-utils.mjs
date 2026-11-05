@@ -20,3 +20,14 @@ export function pageDebuggerUrl(page,port) {
     return u.href;
   } catch {return null;}
 }
+
+// Classification only: do not persist page URLs, titles or rejected metadata.
+export function pageSelectionCounts(pages,port){
+ let appPageCount=0,eligibleCount=0;const rejectionCounts={NON_PAGE:0,NON_APP:0,AUXILIARY:0,INVALID_TARGET:0,INVALID_ENDPOINT:0};
+ for(const page of pages){
+  const app=page?.type==='page'&&typeof page.url==='string'&&page.url.startsWith('app://');if(app)appPageCount++;
+  if(pageDebuggerUrl(page,port)){eligibleCount++;continue;}
+  const reason=page?.type!=='page'?'NON_PAGE':!app?'NON_APP':/pet-overlay|avatar-overlay/.test(page.url)?'AUXILIARY':!/^[-A-Za-z0-9]+$/.test(page.id||'')?'INVALID_TARGET':'INVALID_ENDPOINT';rejectionCounts[reason]++;
+ }
+ return {pageCount:pages.length,appPageCount,eligibleCount,rejectionCounts};
+}

@@ -17,3 +17,5 @@ dist/
 __pycache__/
 
 .DS_Store
+
+/startup-*-summary.json

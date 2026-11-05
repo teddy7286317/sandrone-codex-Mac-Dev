@@ -14,6 +14,8 @@
 
 0.3.2 追加：針對使用者回報的晚套主題／晚開屏加入逐階段 trace；預設保留 baseline，`--early-document` 為選用候選，隔離測試通過但尚無實機時間線，不能保證官方視窗不先顯示。先前可讀性、0.3.1 修正與部分功能確認保留，其他待測不擴大。手動比較與限制見 [macos/STARTUP-TIMING.md](macos/STARTUP-TIMING.md)。
 
+0.3.3 追加：已只讀分析使用者保存的兩份摘要與對應 trace。early 未登記 script，Runtime.enable 到 watchdog 恢復後才返回，cancel guard 因此跳過登記；不是摘要漏記或全域 hook.unsupported fallback。debugger→theme 為 baseline 6.338 秒、early 7.484 秒，約 4.1 秒的 gate 等待缺少舊快照。只補詳細 gate／retry／abort 診斷，保持 baseline、間隔與指令順序，見 [macos/STARTUP-TRACE-ANALYSIS.md](macos/STARTUP-TRACE-ANALYSIS.md)。未改寫或提交使用者原始摘要／trace，下一輪先收 baseline 詳細證據。
+
 以下為歷史交接，描述的是舊來源目錄當時的狀態；若與上述狀態不同，以本輪文件為準。
 
 ---

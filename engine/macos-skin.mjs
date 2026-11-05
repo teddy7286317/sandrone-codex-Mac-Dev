@@ -12,7 +12,7 @@ import {bootstrapSource,installEarlyTargets,earlyPhaseNames} from './macos-early
 import {watchSignal} from './watch-signal.mjs';
 import {diagnose} from '../macos/doctor.mjs';
 import {dataRoot} from '../macos/paths.mjs';
-import {appIsRunning,browserIdFromStderr,pageDebuggerUrl} from './macos-skin-utils.mjs';
+import {appIsRunning,browserIdFromStderr,pageDebuggerUrl,pageSelectionCounts} from './macos-skin-utils.mjs';
 import {Session} from './cdp.mjs';
 import {prepareOriginalTheme,applyOriginalTheme,removeOriginalTheme,replayOriginalOpening,call,originalContract} from './macos-upstream.mjs';
 
@@ -63,10 +63,13 @@ async function main(){
  child.on('exit',()=>{stopped=true;mark('process.exited');debuggerReady(null);});child.on('error',()=>{stopped=true;spawnError=true;debuggerReady(null);});
  await log('app-spawned',{port,pid:child.pid});
  const stop=()=>{stopRequested=true;debuggerReady(null);};process.on('SIGINT',stop);process.on('SIGTERM',stop);
- const sessions=new Map(),signal=watchSignal();let browser,early;
- async function pollSleep(ms){const began=performance.now();if(options.earlyDocument)await signal.wait(ms);else await sleep(ms);if(!ready)mark('poll.sleep',{requestedMs:ms,actualMs:performance.now()-began});}
+ const sessions=new Map(),signal=watchSignal(),attemptCounts=new Map();let browser,early;
+ let wakeSequence=0,consumedWakeSequence=0,lastWakeReason='NONE';
+ const wakeSignal=reason=>{wakeSequence++;lastWakeReason=reason;signal.wake();};
+ async function observed(markPhase,event,details,operation){const began=performance.now();let pass=false,errorCode,cdpCode;try{const result=await operation();pass=true;return result;}catch(error){errorCode=error.code;cdpCode=error.cdpCode;throw error;}finally{markPhase(event,{...details,pass,errorCode,cdpCode,durationMs:performance.now()-began});}}
+ async function pollSleep(ms){const detailed=!ready,began=performance.now(),before=wakeSequence,pending=wakeSequence>consumedWakeSequence;if(detailed)mark('retry.wait.start',{cycle,requestedMs:ms});if(options.earlyDocument)await signal.wait(ms);else await sleep(ms);const actualMs=performance.now()-began,wakeReason=!options.earlyDocument?'BASELINE_TIMER':pending?'PENDING_EVENT':wakeSequence!==before?lastWakeReason:'TIMEOUT';consumedWakeSequence=wakeSequence;if(detailed){mark('poll.sleep',{cycle,requestedMs:ms,actualMs,wakeReason});mark('retry.wait.end',{cycle,requestedMs:ms,actualMs,wakeReason});}}
  async function identity(){if(stopped)throw new Error('Launched application exited');const v=await metadata(port,'/json/version');if(v.webSocketDebuggerUrl!==`ws://127.0.0.1:${port}/devtools/browser/${browserId}`)throw Object.assign(new Error('Debugger identity changed'),{fatal:true,code:'IDENTITY_MISMATCH'});}
- let disabled=false,ready=false,openingShown=false,lastCommand=null,generation=0,command=null,controlError=null,replayedCommand=null;
+ let disabled=false,ready=false,openingShown=false,lastCommand=null,generation=0,command=null,controlError=null,replayedCommand=null,cycle=0;
  let controlTimer,controlQueue=Promise.resolve();
  const record={port,pid:child.pid,executable,launch,appVersion:app.version,traceFile:`startup-${launch}.jsonl`,startupMode:options.earlyDocument?'early-document':'baseline'};
  async function removeAll(){let pass=true;for(const s of sessions.values())if(!s.closed){try{await removeOriginalTheme(s);}catch{pass=false;}}return pass;}
@@ -77,7 +80,7 @@ async function main(){
   if(!browserId)throw new Error(spawnError?'應用啟動失敗。':'未能核對本次啟動的除錯身分；請手動退出本次啟動的 ChatGPT。');
   await identity();record.browserId=browserId;
   browser=await new Session(`ws://127.0.0.1:${port}/devtools/browser/${browserId}`,{port}).open();mark('debugger.connected');
-  if(options.earlyDocument){try{early=await installEarlyTargets(browser,{source:earlySource,trace:mark,wake:()=>signal.wake(),identity});}catch{mark('hook.unsupported',{code:'FALLBACK_TO_LATE_INJECTION'});}}
+  if(options.earlyDocument){try{early=await installEarlyTargets(browser,{source:earlySource,trace:mark,wake:reason=>wakeSignal(reason||'EARLY_EVENT'),identity});}catch{mark('hook.unsupported',{code:'FALLBACK_TO_LATE_INJECTION'});}}
   else {browser.onEvent((method,params)=>{if(method==='Target.targetCreated'&&params.targetInfo?.type==='page')mark('renderer.target.discovered',{target:params.targetInfo.targetId});});await browser.send('Target.setDiscoverTargets',{discover:true});}
   await writeFile(path.join(projectRoot,'state/macos-session.json'),JSON.stringify(record,null,2),{mode:0o600});
   async function readControl(){
@@ -85,44 +88,51 @@ async function main(){
    if(next.launch!==record.launch||next.nonce===lastCommand)return;
    lastCommand=next.nonce;command=next;
    if(next.action==='disable'){disabled=true;generation++;await identity();let hooksClean=true;try{await early?.suspend();}catch{hooksClean=false;}const cleanupComplete=await removeAll();await log('disabled',{cleanupComplete:cleanupComplete&&hooksClean});if(!hooksClean)throw new Error('早期註冊清理未能確認；主題清理已嘗試，請手動完全退出本次 ChatGPT。');}
-   if(next.action==='enable'){generation++;await early?.resume();disabled=false;signal.wake();await log('enabled');}
+   if(next.action==='enable'){generation++;await early?.resume();disabled=false;wakeSignal('CONTROL_ENABLE');await log('enabled');}
   }
   controlTimer=setInterval(()=>{controlQueue=controlQueue.then(()=>stopped||stopRequested?null:readControl()).catch(error=>{controlError=error;});},200);
   await log('debugger-identified');const readyDeadline=Date.now()+30000;
   while(!stopped&&!stopRequested){
-   await identity();
-   const pages=await metadata(port,'/json/list');if(!Array.isArray(pages))throw new Error('Invalid target list');
+   cycle++;const detailed=!ready,scanMark=(event,details)=>{if(detailed)mark(event,{cycle,...details});};
+   await observed(scanMark,'scan.identity.end',{},identity);
+   const pages=await observed(scanMark,'scan.targets.end',{},()=>metadata(port,'/json/list'));if(!Array.isArray(pages))throw new Error('Invalid target list');
+   const counts=pageSelectionCounts(pages,port);scanMark('scan.targets.counts',counts);if(!counts.eligibleCount)scanMark('readiness.no-target',{code:'NO_ELIGIBLE_APP_TARGET',...counts});
    const valid=pages.filter(p=>pageDebuggerUrl(p,port)),ids=new Set(valid.map(p=>p.id));
    for(const [id,s]of sessions)if(!ids.has(id)||s.closed){await s.close();sessions.delete(id);}
-   await controlQueue;if(controlError)throw controlError;
+   await observed(scanMark,'scan.control.end',{},()=>controlQueue);if(controlError)throw controlError;
    for(const page of valid){
-    let session=sessions.get(page.id);
+    let session=sessions.get(page.id),stage='PAGE_CONNECT';const attempt=(attemptCounts.get(page.id)||0)+1;attemptCounts.set(page.id,attempt);
+    const attemptMark=(event,details)=>{if(detailed||event!=='readiness.result')mark(event,{cycle,attempt,...details});};
+    if(detailed)attemptMark('attempt.start',{target:page.id});
     try{
      if(!session){
-      await identity();session=await new Session(pageDebuggerUrl(page,port),{port}).open();sessions.set(page.id,session);
+      stage='PAGE_IDENTITY';await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},identity);stage='PAGE_CONNECT';session=await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:'PAGE_CONNECT'},()=>new Session(pageDebuggerUrl(page,port),{port}).open());sessions.set(page.id,session);
       mark('renderer.page.connected',{target:page.id});if(!early)mark('renderer.attached',{target:page.id,capturedBeforeScripts:false});
       session.onEvent((method,params)=>{
-       if(method==='Runtime.executionContextCreated'&&params.context?.auxData?.isDefault){mark('renderer.context.observed',{target:page.id});signal.wake();}
-       if(method==='Runtime.bindingCalled'&&params.name==='sandroneStartup'){try{const v=JSON.parse(params.payload);if(earlyPhaseNames.has(v.phase)&&Number.isFinite(v.rendererMs)&&Number.isFinite(v.rendererTimeOrigin)){mark(v.phase,{target:page.id,rendererMs:v.rendererMs,rendererTimeOrigin:v.rendererTimeOrigin,rendererUnixMs:v.rendererMs+v.rendererTimeOrigin});signal.wake();}}catch{}return;}
+       if(method==='Runtime.executionContextCreated'&&params.context?.auxData?.isDefault){mark('renderer.context.observed',{target:page.id});wakeSignal('Runtime.executionContextCreated');}
+       if(method==='Runtime.bindingCalled'&&params.name==='sandroneStartup'){try{const v=JSON.parse(params.payload);if(earlyPhaseNames.has(v.phase)&&Number.isFinite(v.rendererMs)&&Number.isFinite(v.rendererTimeOrigin)){mark(v.phase,{target:page.id,rendererMs:v.rendererMs,rendererTimeOrigin:v.rendererTimeOrigin,rendererUnixMs:v.rendererMs+v.rendererTimeOrigin});wakeSignal(v.phase);}}catch{}return;}
        if(method!=='Runtime.bindingCalled'||params.name!=='sandroneReplayOpening'||params.payload!=='replay'||disabled||stopped||stopRequested||session.replaying)return;
        session.replaying=true;
        (async()=>{const own=generation;await identity();await replayOriginalOpening(session,resources,{isCancelled:()=>disabled||stopRequested||generation!==own});await log('replay-requested');})().catch(()=>log('replay-failed')).finally(()=>{session.replaying=false;});
       });
-      await session.send('Runtime.enable');await session.send('Runtime.addBinding',{name:'sandroneReplayOpening'});await session.send('Runtime.addBinding',{name:'sandroneStartup'});
-      const clock=await session.evaluate(call(installTimingProbe));
+      stage='RUNTIME_ENABLE';await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},()=>session.send('Runtime.enable'));
+      stage='BIND_REPLAY';await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},()=>session.send('Runtime.addBinding',{name:'sandroneReplayOpening'}));
+      stage='BIND_TIMING';await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},()=>session.send('Runtime.addBinding',{name:'sandroneStartup'}));
+      stage='TIMING_PROBE';const clock=await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},()=>session.evaluate(call(installTimingProbe)));
       mark('renderer.document.observed',{target:page.id,rendererTimeOrigin:clock.origin,rendererMs:clock.now,rendererUnixMs:clock.origin+clock.now});
       for(const paint of clock.paints)mark('renderer.'+paint.name,{target:page.id,rendererMs:paint.at,rendererTimeOrigin:clock.origin,rendererUnixMs:clock.origin+paint.at});
      }
      if(disabled){await removeOriginalTheme(session);continue;}
-     const healthy=await session.evaluate(`Boolean(window.__SANDRONE_MAC_VERIFIED__?.revision===${JSON.stringify(resources.loaded.revision)}&&document.documentElement?.getAttribute('data-dream-skin')==='active'&&window.__CODEX_DREAM_SKIN_STATE__?.revision===${JSON.stringify(resources.loaded.revision)}&&window.__SANDRONE_MAC_UI__&&document.adoptedStyleSheets.includes(window.__SANDRONE_MAC_UI__.sheet))`);
+     stage='HEALTH_CHECK';const healthy=await observed(scanMark,'renderer.setup.command',{target:page.id,attempt,code:stage},()=>session.evaluate(`Boolean(window.__SANDRONE_MAC_VERIFIED__?.revision===${JSON.stringify(resources.loaded.revision)}&&document.documentElement?.getAttribute('data-dream-skin')==='active'&&window.__CODEX_DREAM_SKIN_STATE__?.revision===${JSON.stringify(resources.loaded.revision)}&&window.__SANDRONE_MAC_UI__&&document.adoptedStyleSheets.includes(window.__SANDRONE_MAC_UI__.sheet))`));
      if(!healthy){
-      const operation=generation;
-      const result=await applyOriginalTheme({session,targetId:page.id,resources,opening:options.opening&&!openingShown,isCancelled:()=>disabled||stopRequested||operation!==generation,trace:mark,reusePreparedTheme:Boolean(early)});
+      stage='APPLY_ORIGINAL_THEME';const operation=generation;
+      const result=await applyOriginalTheme({session,targetId:page.id,resources,opening:options.opening&&!openingShown,isCancelled:()=>disabled||stopRequested||operation!==generation,trace:attemptMark,reusePreparedTheme:Boolean(early)});
       if(result.reason==='ORIGINAL_VERIFICATION_FAILED'){let hooksClean=true;try{await early?.suspend();}catch{hooksClean=false;}throw Object.assign(new Error(hooksClean?'原版主題驗證未通過，已撤回。':'原版驗證失敗且早期註冊清理未能確認，請手動退出本次 ChatGPT。'),{fatal:true});}
       if(result.pass){if(!ready)mark('startup.ready',{target:page.id});ready=true;openingShown||=Boolean(result.opening?.shown);await log('original-theme-verified',{target:page.id,openingShown,visualAcceptance:'PENDING'});console.log('原版程式驗證通過，仍待手動檢查畫面。');}
      }
      if(command?.launch===record.launch&&command.action==='replay'&&command.nonce===lastCommand&&replayedCommand!==lastCommand){const own=generation;const result=await replayOriginalOpening(session,resources,{isCancelled:()=>disabled||stopRequested||generation!==own});if(result.reason!=='inactive')replayedCommand=lastCommand;}
     }catch(error){
+     if(detailed)attemptMark('readiness.error',{target:page.id,gate:stage,code:'COMMAND_ERROR',errorCode:error.code||'UNCLASSIFIED',cdpCode:error.cdpCode});
      if(error.fatal)throw error;
      // Context destruction while routing/reloading is retried; never log page contents.
      await log('target-unavailable',{target:page.id,code:error.code||'RENDERER_UNAVAILABLE'});
