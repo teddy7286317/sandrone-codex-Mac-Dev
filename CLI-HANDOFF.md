@@ -1,6 +1,6 @@
 # 本輪接續狀態（2026-11-05）
 
-最新指示：保留現有可用版，暫停 --early-document 優化。本輪僅進行 Mac 早期載入唯讀研究與獨立 Electron 原型，不升版、不修改官方安裝／產品引擎、不合併 main、不發布。研究結論：session preload 與本地影片在自有 Mac Electron 可行，但尚未找到不改官方包／簽名／防護的官方 main 早期入口，不能宣稱與 Windows 原生整合等效。證據、取捨與原型見 [macos/research/early-loading/README.md](macos/research/early-loading/README.md)。既有實機通過與待驗收範圍維持原樣。
+最新指示（2026-11-06）：先收斂現有 baseline，插件與早期載入研究暫停。0.3.4 是本地 Dock 啟動器測試包，不是發布：Cocoa 事件迴圈保持回應，提供狀態／停用／啟用／重播／停止；退出等待自有 Node 清理，不強制退出 ChatGPT。主題與開屏稍晚載入是已知限制，官方圖示啟動不會自動套用。操作見 [macos/DOCK-LAUNCHER.md](macos/DOCK-LAUNCHER.md)，設定、模型選單、普通 .app／Dock 啟動與錯誤恢復見 [macos/MANUAL-ACCEPTANCE.md](macos/MANUAL-ACCEPTANCE.md)，全部仍待使用者手動驗收。既有確認範圍保留，不合併 main、不發布、不向上游送 PR。前輪研究已存檔，本輪不繼續優化 --early-document。
 
 目前工作樹為真正 fork 的 `SandroneCodex-Mac`，分支 `macos/original-engine-integration`，保留上游歷史。`origin/main` 與已 fetch 的 `upstream/main` 均為 `dfea82e39d9d4a42524dc9eed3d61204254d0d3a`。舊 `SandroneCodex-Source` 保留，未從它複製舊引擎蓋過新版。
 

@@ -1,112 +1,52 @@
-# Sandrone Mac 0.3.3 離線整合測試版
+# Sandrone Mac 0.3.4 本地整合測試包
 
-本輪已實作原版主題、開屏快取介面、Mac 重播入口、封裝與離線預覽。**使用者已實機確認對話與輸入框可讀，開屏重播、停用及重新啟用正常。** 首頁其他區域與窄視窗對話可讀性亦回報可接受；使用者亦確認 0.3.1 已解決首頁 Chat／Work 原白底淺字問題；未逐項確認的互動狀態仍待驗收。設定、模型選單及 `.app` 自動開屏仍待驗收，不代表全面通過。
+本輪收斂現有 **baseline**，暫停插件與早期載入研究。原版主題、開屏播放器、驗證與失敗撤回保留，撤回的 `engine/macos-theme.css` 持續停用。**主題與開屏稍晚載入是已知限制；官方 ChatGPT 圖示啟動不會自動套用主題。** 未公開發布，也不代表完整實機驗收完成。
 
-原始碼位於真正 fork 的 `macos/original-engine-integration` 分支；上游來源與範圍見 [UPSTREAM.md](UPSTREAM.md)。舊 `../SandroneCodex-Source` 保留不動，請在新資料夾執行以下指令。
+使用者先前已確認對話／輸入框可讀，開屏重播、停用及重新啟用正常；首頁其他區域與窄視窗對話可接受，0.3.1 已解決 Chat／Work 原白底淺字問題。未逐項確認的互動狀態不擴大標記。**設定頁、模型選單、`.app` 普通啟動、Dock 操作與錯誤恢復均仍待本版手動驗收。**
 
-撤回的 `engine/macos-theme.css` 保持停用，載入器也不讀取它；歷史研究 CSS 不會打包執行。基底外觀沿用上游主題 payload 與原版 `native-ui.css`；0.3.1 另載入限定首頁切換鈕的 `macos-controls.css`，修正依據及手動步驟見 [HOME-MODE-TOGGLE.md](HOME-MODE-TOGGLE.md)。
+## 日常使用：放進 Dock，不需 Terminal 持續開著
 
-## 啟動延遲量測（0.3.2）
+本地產物：`dist/Sandrone-ChatGPT-0.3.4-Mac-Test.app`。保留舊版，把新包放到固定位置後拖入 Dock。完成目前 Work 工作、儲存內容、結束舊載入器並手動 Cmd+Q 完全退出 ChatGPT，再從桑多涅啟動器啟動。
 
-已加入程序啟動、debugger、renderer、主題、驗證、媒體與動畫時間線。0.3.3 依實機 trace 補上每次 gate 與 retry 條件；early 登記中止與 6–7 秒等待分析見 [STARTUP-TRACE-ANALYSIS.md](STARTUP-TRACE-ANALYSIS.md)。本輪只補診斷，先以 baseline 收證據，不改動畫、輪詢間隔或指令順序。預設保留原流程作 baseline；`--early-document` 是選用的首次載入候選，實機尚未驗收，不保證官方視窗不先顯示。比較指令、隔離結果、清理及限制見 [STARTUP-TIMING.md](STARTUP-TIMING.md)。不得以延長動畫或固定等待掩蓋延遲。
+啟動器提供狀態視窗、停用／重新啟用、重播、停止與清理，以及包內離線說明。關閉視窗仍繼續運行；再點 Dock 重開視窗，不重複啟動。結束啟動器會先請求載入器停止清理，不強制退出 ChatGPT；清理未確認時保留提示，不標為已還原。
 
-## 先看離線預覽，不用退出 Work
+- [Dock 安裝、使用、完整還原與移除](DOCK-LAUNCHER.md)
+- [設定／模型／普通啟動／錯誤恢復的逐項手動驗收](MANUAL-ACCEPTANCE.md)
+- [程式測試、已確認範圍及其餘待驗收](VALIDATION.md)
 
-雙擊 `macos/preview.command`，或在 Terminal 執行：
+需要建置時使用的 Node.js 24 以上版本；路徑記在包內 `Contents/Resources/node-path.txt`，Node 尚未內嵌。移動 `.app` 不依賴原始碼位置，但移除 Node 會無法啟動。包使用本機臨時簽名、未 Apple 公證；不是免依賴公開發行包。不修改官方安裝、簽名、登入資料或系統防護；若系統阻擋，不關閉防護來繞過。
+
+## 還原與移除摘要
+
+先停用主題，再停止並等載入器結束，結束桑多涅啟動器。儲存工作並手動完全退出 ChatGPT，之後從官方圖示啟動即可回原生介面。**只停止載入器不會關閉仍在官方程序內的 loopback 除錯端點，完全退出 ChatGPT 才會關閉。**
+
+完成還原、確認新舊載入器都已結束後，可從 Dock 移除捷徑、把桑多涅 `.app` 移至垃圾桶；工具資料可備份後選擇移除 `~/Library/Application Support/SandroneMacDev/`。不要刪官方聊天、帳號資料、Keychain 或其他工具使用的 Node。詳細步驟見 [DOCK-LAUNCHER.md](DOCK-LAUNCHER.md)。沒有安裝登入項目、LaunchAgent 或系統服務。
+
+## 可選手動診斷
+
+實機操作、控制與 audit 均由使用者手動執行；代理不連線／操作受限 `com.openai.codex`，也不換管道繞過限制。日常 `.app` 控制不需 Terminal。需要診斷時，才在倉庫根目錄或包內 `Contents/Resources` 執行：
 
 ```sh
-cd '/path/to/SandroneCodex-Mac'  # 換成新克隆資料夾的實際路徑
-node macos/build-preview.mjs
-open dist/Sandrone-Mac-preview.html
+node macos/audit-current.mjs --manual settings
+node macos/audit-current.mjs --manual menu
+node macos/startup-report.mjs
 ```
 
-頁面可測首頁／對話、設定、選單表單、播放／重播、跳過、停用及再次啟用。Esc、雙擊、連按兩次空格或 Enter 可跳過。開屏結束保留隱藏媒體快取，停用才完整釋放。減少動態效果模式不準備影片。
+只在目前由本載入器啟動的程序仍在運行、且你已手動切到相應畫面時使用 audit；它會核對 PID／binary／port／browser ID，再收集限定錨點、幾何、色彩及媒體狀態，不收正文、輸入值、HTML、頁面 URL 或截圖。只分享願意提供的畫面與對應檔案，不需整個資料目錄或啟動 state。
 
-這是合成 DOM，沒有連線 ChatGPT、帳號或網路，不含官方應用資源。頁面上的示例文字、版面與各類錨點不能代替真實介面驗收；預覽看起來正確不代表實機的聊天、設定和輸入框都相容。
+資料位於 `~/Library/Application Support/SandroneMacDev/state/` 與 `logs/`。所有命令可共用 `SANDRONE_DATA_DIR` 指向另一個工具資料夾。這些本機檔案不提交 Git。既有 `node macos/control.mjs disable|enable|replay` 仍保留；命令送出不等於清理或畫面已確認。
 
-## 程式檢查與建置
+## 開發檢查與本地打包
 
 ```sh
 node --test tests/*.test.mjs
 node engine/macos-skin.mjs --check
+node tests/macos-launcher.cocoa.mjs  # 僅自己的 Cocoa／假子程序，不啟動官方 app
 zsh Build-Mac.command
 ```
 
-`--check` 只讀取應用 metadata 並驗證原版主題與素材，不啟動應用、不連線除錯介面。建置使用本機 Node.js 24 與 Xcode Command Line Tools。輸出：`dist/Sandrone-ChatGPT-0.3.3-Mac-Test.app`。已存在時拒絕覆蓋。
+`--check` 僅讀應用 metadata 並驗證主題和素材，不啟動／連線官方 app。打包需要本機 Node.js 24 與 Xcode Command Line Tools；已存在產物時拒絕覆蓋，可先改名保留再重建。包只含本專案合法引擎、vendor、主題、素材、說明與授權，不含官方 ASAR／原生模組、帳號、profile、logs、state、研究原型或測試程式。原版 renderer／opening-client／native-ui.css 未改；0.3.1 局部切換鈕樣式及已驗證功能保留。
 
-測試版以目前架構編譯、使用本機臨時簽名，未 Apple 公證；需保留建置時的 Node 路徑。包內包含原版引擎、vendor、主題、素材、來源及授權，**不複製官方 app.asar、帳號、profile、logs 或 state**。包的執行不依賴原始碼資料夾。若只保留 `.app`，包內 `Contents/Resources/macos/` 也包含 control 與 audit-current，可由 Node 手動執行；它們使用相同資料目錄。
+若要只看合成頁，不退出 Work，可執行 `node macos/build-preview.mjs` 後開啟 `dist/Sandrone-Mac-preview.html`，或雙擊 `macos/preview.command`。預覽沒有官方帳號或介面，不能代替實機驗收。
 
-使用者手動執行載入器、控制和診斷時，資料寫入：
-
-```text
-~/Library/Application Support/SandroneMacDev/
-  state/macos-session.json
-  state/macos-control.json
-  logs/macos-skin.jsonl
-  logs/manual-<情境>.json
-```
-
-可用同一個 `SANDRONE_DATA_DIR` 環境變數將所有命令指向其他資料夾。這些檔案不屬於 Git 成果。
-
-## 手動實機驗收：第一階段只套主題
-
-以下步驟**由你手動操作**；代理不執行載入器、控制命令或 audit-current，也不透過其他工具繞過 Computer Use 對 `com.openai.codex` 的存取限制。
-
-1. 先儲存 Work 中的工作，等目前對話工作結束。開啟獨立 Terminal，進入上面的新專案資料夾。使用 Cmd+Q 完全退出 ChatGPT；不要只關視窗。
-2. 在 Terminal A 執行下列命令並保持它運行：
-
-   ```sh
-   node engine/macos-skin.mjs --theme-only
-   ```
-
-   它只會啟動新的官方應用程序，不會強制退出或接管現有程序。`--theme-only` 不自動播放開屏，但保留手動重播功能。若原版程式驗證失敗，會撤回；錯誤仍需回報，不能因此推定畫面正確。
-3. 先不要播放開屏。手動檢查首頁與一個不含敏感資訊的對話：背景、右側立繪、側欄、標題列、正文、次級文字、程式碼、輸入框、提示文字、模型選單、一般選單和設定表單。輸入框可輸入不送出的示例字。將視窗縮窄至約 600px 再檢查。特別留意白底淺字、對話或輸入框消失、遮蓋按鈕、橫向溢位、跳動與不可點擊。
-4. 在 Terminal B 逐個對應目前畫面執行（先 `cd` 同一新專案資料夾）：
-
-   ```sh
-   node macos/audit-current.mjs --manual home
-   node macos/audit-current.mjs --manual thread
-   node macos/audit-current.mjs --manual menu
-   node macos/audit-current.mjs --manual settings
-   node macos/audit-current.mjs --manual narrow
-   ```
-
-   每個命令只在你已切到相應畫面後執行，不會幫你操作介面。它會核對啟動紀錄的 PID、實際 binary、監聽 port、browser ID，再收集契約錨點數量、幾何、計算色彩、祖先背景與媒體狀態；不收聊天正文、輸入值、HTML、頁面 URL 或截圖。設定頁／輔助頁缺少主 shell 可能是合法情況，仍需畫面判讀。
-5. 回傳你願意分享的畫面及相應 `manual-*.json`。畫面建議包括首頁全窗、對話及輸入框、開啟的選單／設定、窄視窗；請自行避開帳號與私人對話。只需分享這些明確的診斷檔，不必分享整個資料目錄或啟動 state。
-
-## 手動實機驗收：第二階段開屏與重播
-
-第一階段畫面沒有可讀性問題後，才執行：
-
-```sh
-node macos/control.mjs replay
-```
-
-或點擊原版 header 中的 `↻`（可透過輔助使用標籤辨認「重播桑多涅開屏」）。確認原版人物描邊、齒輪水紋、逐筆手簽、同步影片與原版文案；動畫應在同一個視窗內淡出，回到原來內容與焦點。逐一測 Esc、雙擊、兩次空格／Enter，再重播。記錄主觀卡頓，不以離線測試的耗時替代。
-
-播放中可在 Terminal B 執行 `node macos/audit-current.mjs --manual opening`；結束後執行 `node macos/audit-current.mjs --manual replay`。結束後預期影片仍有來源且暫停，第二次重播可復用快取。
-
-若希望測試普通啟動時的自動開屏：在 Terminal A 按 Ctrl+C，確認清理後手動 Cmd+Q 退出 ChatGPT，再雙擊測試版 `.app`。它走同一套原版驗證與快取流程，驗證通過後才顯示開屏；此路徑仍需單獨實機確認。不要同時啟動兩個載入器。
-
-## 停用、再次啟用與還原
-
-Terminal B：
-
-```sh
-node macos/control.mjs disable
-node macos/audit-current.mjs --manual disabled
-```
-
-控制命令只寫入本次啟動的請求檔，須由仍運行的載入器處理；看到命令成功不代表清理已驗證。請確認動畫、Mac 重播與原版主題已移除，診斷顯示 `cached:false`。停用可在準備或播放中測試，遲到回調不應再次顯示。
-
-```sh
-node macos/control.mjs enable
-```
-
-這只作用於目前這次測試，不改寫 ChatGPT 的外觀偏好。再次確認主題與重播能恢復。若異常，保持停用並回傳畫面與診斷。
-
-完整還原：Terminal A 按 Ctrl+C（若透過 `.app` 啟動，先送出 disable），手動完全退出 ChatGPT，再由官方圖示正常啟動。官方檔案、簽名與系統防護均不改動。除錯端點只綁定 loopback，但會留到該官方應用程序完全退出；只停載入器不會關閉端點。此工具不會幫你強制退出應用。
-
-## 驗證邊界
-
-程式測試、離線瀏覽器測試、打包及簽名結果見 [VALIDATION.md](VALIDATION.md)。本輪使用者文字回報已確認對話／輸入框可讀性及重播、停用、重新啟用功能。首頁其他區域與窄視窗對話可讀性已回報可接受；Chat／Work 未逐項確認的互動狀態、立繪細節、設定／模型及其他選單／程式碼、Mac 標題列布局、普通啟動、跳過／焦點／減少動態效果、資源釋放診斷與流暢度仍未回報實機測試結果。尚未向上游送 PR 或留言。
+歷史啟動 trace 分析見 [STARTUP-TRACE-ANALYSIS.md](STARTUP-TRACE-ANALYSIS.md)。`--early-document` 原始碼保留但不作日常入口，本輪不再優化；不改動畫長度或壓低輪詢間隔掩蓋延遲。上游與原引擎來源見 [UPSTREAM.md](UPSTREAM.md)。本輪只推送開發分支，不合併 main、不發布、不向上游送 PR。
