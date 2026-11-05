@@ -18,3 +18,5 @@ PR #6 的啟動思路與身分校驗來源繼續記錄於 [PR6-SOURCE.md](PR6-SO
 上游原生 Windows 附加包的早期 preload 與本機影片播放器不是這個 Mac 移植的一部分。本版使用文件所述的可攜式快取介面；不能援引上游 Windows 原生包的驗收作為 Mac 的效能或功能驗收。
 
 0.3.1 以唯讀安裝包原始碼定位首頁專用 Chat／Work 元件，新增 `engine/macos-controls.css` 與診斷 selector，透過 Mac adapter 附加至原版 stylesheet；原版 native-ui.css 本身未修改。此局部修正不是恢復撤回配色。詳見 [HOME-MODE-TOGGLE.md](HOME-MODE-TOGGLE.md)。
+
+0.3.2 新增 Mac 啟動 trace、CDP 子 session 路由與選用 document-start bootstrap；暫時套用後仍須原版 verifySession 通過才能開屏，失敗與停用需移除早期 script。原版 renderer、opening-client、素材與 CSS 未改；官方視窗首次顯示不受此載入器控制。見 [STARTUP-TIMING.md](STARTUP-TIMING.md)。

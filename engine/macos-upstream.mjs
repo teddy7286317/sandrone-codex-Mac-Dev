@@ -8,10 +8,11 @@ import {removeNativeUi,setStartupPhase} from './renderer.mjs';
 import {installMacUi,removeMacUi} from './macos-ui.mjs';
 import {modeToggleAuditEntries} from './macos-controls.mjs';
 const root=new URL('../',import.meta.url);
-const contract=JSON.parse(await fs.readFile(new URL('vendor/dream-skin/windows/assets/selectors.json',root),'utf8'));
+export const originalContract=JSON.parse(await fs.readFile(new URL('vendor/dream-skin/windows/assets/selectors.json',root),'utf8'));
 export const call=(fn,...args)=>`(${fn.toString()})(${args.map(x=>JSON.stringify(x)).join(',')})`;
+const contract=originalContract;
 const evaluators=new WeakMap();
-export function evaluateFor(session){if(!evaluators.has(session))evaluators.set(session,(code,options)=>session.evaluate(code,options));return evaluators.get(session);}
+export function evaluateFor(session){if(!evaluators.has(session))evaluators.set(session,(code,options)=>{const metrics=session.startupOpeningMetrics;if(metrics?.active){if(metrics.calls===0)metrics.trace('media.transfer.start',{target:metrics.target,durationMs:performance.now()-metrics.started});metrics.calls++;metrics.bytes+=Buffer.byteLength(code);}return session.evaluate(code,options);});return evaluators.get(session);}
 
 export function auditSurface(entries) {
  // Allowlisted geometry, counts and colors only: no text, HTML, values or URLs.
@@ -26,7 +27,7 @@ export function auditSurface(entries) {
  });
  const cache=window.__SANDRONE_MEDIA_CACHE__;
  return {matches,visibility:document.visibilityState,viewport:{width:innerWidth,height:innerHeight},version:window.__CODEX_DREAM_SKIN_STATE__?.version??null,
-  skin:document.documentElement.getAttribute('data-dream-skin'),opening:{stage:window.__SANDRONE_OPENING_STATE__?.stage??null,reason:window.__SANDRONE_OPENING_STATE__?.reason??null,cached:Boolean(cache&&!cache.disposed),videos:[cache?.color,cache?.trace].filter(Boolean).map(v=>({paused:v.paused,readyState:v.readyState,width:v.videoWidth,height:v.videoHeight,hasSource:Boolean(v.getAttribute('src'))}))},replay:{present:Boolean(document.getElementById('sandrone-mac-replay')),hidden:document.getElementById('sandrone-mac-replay')?.hidden??true}};
+  skin:document.documentElement?.getAttribute('data-dream-skin')??null,opening:{stage:window.__SANDRONE_OPENING_STATE__?.stage??null,reason:window.__SANDRONE_OPENING_STATE__?.reason??null,cached:Boolean(cache&&!cache.disposed),videos:[cache?.color,cache?.trace].filter(Boolean).map(v=>({paused:v.paused,readyState:v.readyState,width:v.videoWidth,height:v.videoHeight,hasSource:Boolean(v.getAttribute('src'))}))},replay:{present:Boolean(document.getElementById('sandrone-mac-replay')),hidden:document.getElementById('sandrone-mac-replay')?.hidden??true}};
 }
 export async function prepareOriginalTheme({opening=true}={}){
  const [loaded,nativeCss,controlsCss,assets]=await Promise.all([loadPayload(fileURLToPath(new URL('themes/sandrone',root))),fs.readFile(new URL('engine/native-ui.css',root),'utf8'),fs.readFile(new URL('engine/macos-controls.css',root),'utf8'),opening?openingAssets():null]);
@@ -39,7 +40,7 @@ export async function auditOriginalTargets(session){
 export async function removeOriginalTheme(session){
  const failures=[];
  // A failed media command must not prevent theme/style cleanup attempts.
- for(const operation of [()=>releaseOpening(evaluateFor(session)),()=>session.evaluate(call(removeMacUi)),()=>session.evaluate(call(removeNativeUi)),()=>session.evaluate(`(()=>{window.__CODEX_DREAM_SKIN_DISABLED__=true;return Boolean(window.__CODEX_DREAM_SKIN_STATE__?.cleanup?.());})()`)]){
+ for(const operation of [()=>releaseOpening(evaluateFor(session)),()=>session.evaluate('window.__SANDRONE_MAC_BOOTSTRAP__?.dispose?.();window.__SANDRONE_MAC_TIMING__?.dispose?.();delete window.__SANDRONE_MAC_VERIFIED__;'+call(removeMacUi)),()=>session.evaluate(call(removeNativeUi)),()=>session.evaluate(`(()=>{window.__CODEX_DREAM_SKIN_DISABLED__=true;return Boolean(window.__CODEX_DREAM_SKIN_STATE__?.cleanup?.());})()`)]){
   try{await operation();}catch(error){failures.push(error);}
  }
  if(failures.length)throw Object.assign(new Error('Theme cleanup incomplete'),{code:'CLEANUP_INCOMPLETE'});
@@ -53,9 +54,19 @@ export async function replayOriginalOpening(session,resources,{isCancelled=()=>f
  if(isCancelled()){await releaseOpening(evaluateFor(session));return {shown:false,reason:'cancelled'};}
  return showOpening(evaluateFor(session),resources.assets,{replay:true},prepared);
 }
-export async function applyOriginalTheme({session,targetId,resources,verify=verifySession,opening=false,isCancelled=()=>false}){
+export async function applyOriginalTheme({session,targetId,resources,verify=verifySession,opening=false,isCancelled=()=>false,trace=()=>{},reusePreparedTheme=false}){
+ trace('audit.start',{target:targetId});
  const audit=await auditOriginalTargets(session);
+ trace('audit.end',{target:targetId});
  if(audit.visibility==='hidden'||!audit.matches.find(e=>e.key==='shell-main'&&e.visible>0))return {pass:false,reason:'MAIN_SURFACE_UNMATCHED',audit};
+ // Early provisional CSS may precede React's header/composer. Wait for those
+ // structural landmarks before asking the unchanged original verifier; never
+ // treat a failed verification as success or play an opening while waiting.
+ if(reusePreparedTheme){
+  const visible=key=>audit.matches.some(e=>e.key===key&&e.visible>0);
+  const home=audit.matches.some(e=>e.key==='home-icon'&&(e.active??e.count??0)>0);
+  if(!['shell-main','left-panel','header-tint'].every(visible)||(home&&!visible('composer-chrome')))return {pass:false,reason:'RENDERER_NOT_READY',audit};
+ }
  const {loaded,css,assets}=resources;
  const guard=()=>{if(isCancelled())throw Object.assign(new Error('Theme operation cancelled'),{code:'THEME_CANCELLED'});};
  let preparation;
@@ -65,21 +76,26 @@ export async function applyOriginalTheme({session,targetId,resources,verify=veri
   guard();
   // Prepare media alongside original theme installation. Consume rejection
   // immediately; rollback below cancels renderer preparation before returning.
-  if(opening&&assets)preparation=prepareOpening(evaluateFor(session),assets).then(value=>({value}),error=>({error}));
+  if(opening&&assets){const metrics={active:true,calls:0,bytes:0,trace,target:targetId,started:performance.now()};session.startupOpeningMetrics=metrics;trace('media.prepare.start',{target:targetId});preparation=prepareOpening(evaluateFor(session),assets).then(value=>{metrics.active=false;trace('media.prepare.end',{target:targetId,pass:Boolean(value?.prepared),durationMs:value?.preparedMs,calls:metrics.calls,bytes:metrics.bytes});return {value};},error=>{metrics.active=false;trace('media.prepare.end',{target:targetId,pass:false,calls:metrics.calls,bytes:metrics.bytes});return {error};});}
   await session.evaluate(call(setStartupPhase,'applying'));
   guard();
-  await session.evaluate(loaded.payload);
+  const reused=reusePreparedTheme&&await session.evaluate(`Boolean(window.__SANDRONE_MAC_BOOTSTRAP__?.applied&&!window.__SANDRONE_MAC_BOOTSTRAP__.disposed&&document.documentElement.getAttribute('data-dream-skin')==='active'&&window.__CODEX_DREAM_SKIN_STATE__?.revision===${JSON.stringify(loaded.revision)}&&window.__SANDRONE_MAC_UI__?.css===${JSON.stringify(css)}&&document.adoptedStyleSheets.includes(window.__SANDRONE_MAC_UI__.sheet))`);
+  if(!reused){trace('theme.start',{target:targetId});await session.evaluate(loaded.payload);}
   guard();
   const header=contract.selectors.find(e=>e.key==='header-tint').selector;
   await session.evaluate(call(installMacUi,css,header));
   guard();
+  trace(reused?'theme.reused':'theme.applied',{target:targetId});
+  trace('validation.start',{target:targetId});
   const result=await verify(session,targetId,loaded.theme.id,loaded.revision);
+  trace('validation.end',{target:targetId,pass:Boolean(result?.pass)});
   guard();
-  if(!result?.pass){await removeOriginalTheme(session);if(preparation)await preparation;return {pass:false,reason:'ORIGINAL_VERIFICATION_FAILED',audit};}
+  if(!result?.pass){trace('rollback.start',{target:targetId});await removeOriginalTheme(session);trace('rollback.end',{target:targetId,pass:true});if(preparation)await preparation;return {pass:false,reason:'ORIGINAL_VERIFICATION_FAILED',audit};}
+  await session.evaluate(`window.__SANDRONE_MAC_VERIFIED__={revision:${JSON.stringify(loaded.revision)}};`);
   await session.evaluate(call(setStartupPhase,'ready'));
   guard();
   let shown;
-  if(preparation){const prepared=await preparation;guard();if(prepared.error)throw prepared.error;shown=await showOpening(evaluateFor(session),assets,{},prepared.value);guard();}
+  if(preparation){const prepared=await preparation;guard();if(prepared.error)throw prepared.error;trace('animation.request',{target:targetId});shown=await showOpening(evaluateFor(session),assets,{},prepared.value);guard();if(shown?.shown){const timing=await session.evaluate(`(()=>{const state=window.__SANDRONE_OPENING_STATE__,video=window.__SANDRONE_MEDIA_CACHE__?.color;video?.requestVideoFrameCallback?.(()=>{try{window.sandroneStartup?.(JSON.stringify({phase:'animation.first-frame',rendererMs:performance.now(),rendererTimeOrigin:performance.timeOrigin}));}catch{}});return {started:state?.started};})()`);trace('animation.start',{target:targetId,rendererUnixMs:timing?.started});}}
   return {pass:true,audit,opening:shown};
- }catch(error){await removeOriginalTheme(session).catch(()=>{});if(preparation)await preparation;throw error;}
+ }catch(error){trace('rollback.start',{target:targetId});let cleaned=true;await removeOriginalTheme(session).catch(()=>{cleaned=false;});trace('rollback.end',{target:targetId,pass:cleaned});if(preparation)await preparation;throw error;}
 }

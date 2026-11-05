@@ -3,6 +3,7 @@
 // Native launcher for environments where AppleScript additions are unavailable.
 int main(void) {
   @autoreleasepool {
+    double launcherStartMs = [[NSDate date] timeIntervalSince1970] * 1000.0;
     [NSApplication sharedApplication];
     [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
     NSString *resources = [[NSBundle mainBundle] resourcePath];
@@ -14,7 +15,14 @@ int main(void) {
     } else {
       NSTask *task = [[NSTask alloc] init];
       task.executableURL = [NSURL fileURLWithPath:node];
-      task.arguments = @[[resources stringByAppendingPathComponent:@"engine/macos-skin.mjs"]];
+      NSMutableArray<NSString *> *arguments = [NSMutableArray arrayWithObject:[resources stringByAppendingPathComponent:@"engine/macos-skin.mjs"]];
+      for (NSString *argument in [[NSProcessInfo processInfo] arguments]) {
+        if ([argument isEqualToString:@"--early-document"] || [argument isEqualToString:@"--theme-only"]) [arguments addObject:argument];
+      }
+      task.arguments = arguments;
+      NSMutableDictionary *environment = [[[NSProcessInfo processInfo] environment] mutableCopy];
+      environment[@"SANDRONE_NATIVE_LAUNCH_START_MS"] = [NSString stringWithFormat:@"%.3f", launcherStartMs];
+      task.environment = environment;
       NSPipe *output = [NSPipe pipe];
       task.standardOutput = [NSFileHandle fileHandleWithNullDevice];
       task.standardError = output;
