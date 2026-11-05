@@ -1,92 +1,76 @@
-> **macOS 移植測試版**：離線整合、預覽與手動驗收步驟見 [macos/README.md](macos/README.md)。原版引擎保持沿用，撤回配色保持停用；使用者已確認對話／輸入框可讀及重播、停用、重新啟用正常，其餘實機項目仍待測。下方為上游 Windows 說明。
+# Sandrone Codex Mac
 
-# Sandrone Codex · 桑多涅人偶工坊
+為 macOS 上的 ChatGPT／Codex 桌面客戶端提供桑多涅黑金主題與同窗開屏的非官方移植。
 
-为 **Windows 11 x64 上的官方 Codex 桌面客户端**制作的非官方桑多涅主题与启动器。
+以 [fengye337/sandrone-codex](https://github.com/fengye337/sandrone-codex) 為基礎，沿用原版主題與開屏引擎，另提供 Mac 啟動器、Dock 控制及還原流程。**目前版本為 0.3.4 本地測試版，已有部分使用者實機確認，尚未完成所有情境驗收。**
 
-保留官方 AI、模型、MCP 与审批，增加角色背景、黑金配色、同窗开屏、手写签名和重播入口。
+## 功能
 
-![桑多涅同窗开屏](docs/images/opening.png)
+- 右側人物背景、黑金側欄、象牙白文字及深藍輸入框。
+- 原版同窗開屏、手寫簽名、影片與重播功能。
+- Dock 啟動器提供狀態、停用、重新啟用、重播及停止清理，不必持續開著 Terminal。
+- 主題停用、媒體清理及恢復官方外觀的操作入口。
+- 首頁 Chat／Work 切換鈕的 Mac 配色適配。
 
-## 下载并直接使用
+## 先了解使用範圍
 
-**[下载完整启动器 v0.6.1](https://github.com/fengye337/sandrone-codex/releases/download/v0.6.1/SandroneCodex-0.6.1-Windows-x64.zip)** · [全部发布文件](https://github.com/fengye337/sandrone-codex/releases)
+- **請從桑多涅啟動器啟動。從官方 ChatGPT 圖示啟動不會自動套用主題。**
+- 主題與開屏會稍晚於官方視窗出現，這是目前已知限制。實驗性的 early-document 未證實改善實機啟動，日常預設不啟用。
+- 不修改官方應用檔案、簽名、登入資料或系統防護，不是 OpenAI 官方插件。
+- 透過只綁定本機回環位址的除錯介面載入。本機其他程序仍可能存取該介面；停止載入器不會關閉它，必須完全退出該次 ChatGPT 程序。
+- Windows 原生附加包使用另一套載入架構，不屬於本 Mac 版本。
 
-完整版带桑多涅立绘、视频、轮廓、签名和 Node 运行时，普通使用者不需要 Git、Python、npm 或自行编译。
+## 環境與建置
 
-1. 自行安装官方 Windows Codex，正常打开并登录一次。
-2. 完整解压启动器 ZIP 到本机可写目录，不要在压缩包内直接运行。
-3. 双击 `检查安装.cmd`，再双击 `安装快捷方式.cmd`。
-4. 保存工作，从托盘手动完全退出已有 Codex，打开桌面「桑多涅 Codex（分享版）」。
-5. 独立 profile 首次可能需要手动登录自己的账号；不会复制原账号凭据。
+已記錄的開發／測試環境：Apple Silicon Mac、Node.js 24、`/Applications/ChatGPT.app`（bundle ID `com.openai.codex`，版本 `26.1027.30824`）。其他客戶端版本與 Intel Mac 尚未驗證。
 
-无需固定盘符；移动目录后重新安装快捷方式。此包不包含官方 Codex 程序、账号或模型额度。
+需要 Node.js 24 以上及 Xcode Command Line Tools。這個倉庫目前提供原始碼；未提供經 Apple 公證、內建 Node 的免依賴安裝包。
 
-## 主题细节
-
-- 同窗开屏：橙色人物矢量描边，蓝色齿轮和水纹，逐笔 Sandrone 手签，显色后淡入工作界面。
-- 连续运动：原片环境描边预渲染，与彩色视频同步；显色不重新从头播放视频。
-- 双击、连续两次空格/Enter 或 Esc 跳过；顶栏「重播开屏」只重播动画，不重启或重跑任务。
-- 加粗 CodeX；解算开始。→ 填入变量。→ 进程良好。→ 析构万理！啊哈哈哈...（文字）。
-- 右侧立绘、透明工具栏、黑金侧栏、象牙白文字与深蓝输入框；首页「机巧镀形，万理澄清」。
-- 修复 ChatGPT 正文、项目表单、菜单、设置、代码和活动标题的可读性；图片查看器/弹窗打开时重播按钮让位。
-- 开屏结束暂停媒体并保留当前窗口缓存，禁用主题时完全释放；日常背景保持静态，支持减少动态效果偏好。见 [开屏预加载与缓存](docs/OPENING-PERFORMANCE.zh-CN.md)。
-
-更多内容见 [功能清单](docs/FEATURES.zh-CN.md)。
-
-## 恢复官方界面
-
-保存工作后运行 `一键恢复官方原版.cmd`；它只处理身份匹配的主题会话，移除主题、正常退出，再打开官方入口。
-
-也可以手动从托盘退出主题版，再打开原来的官方快捷方式。官方 WindowsApps 文件从未被修改。`移除快捷方式.cmd` 只移除指向当前目录的分享版入口。
-
-## 可选：在普通 Codex 中加载和管理主题
-
-新增的 Windows 原生附加包可从普通 Codex 入口加载主题，沿用原有配置，不需要专用启动器或远程调试端口。界面中的「主题」菜单提供启用、回到原生界面、重播、启动播放开关，就绪后自动进入开关，以及退出后卸载和取消卸载。
-
-这是可卸载的 MSIX modification package，不是官方插件目录中的插件。当前适配 `26.1021.3705.0`，本地构建使用该版本官方签名 MSIX；不修改官方安装文件，也不强制退出当前聊天。卸载确认后先禁用主题，等待用户退出 Codex 再移除附加包。
-
-0.3.1.0 提前显示开屏，以预渲染视频配合真实阶段进度，并修复启动握手导致开屏与重播失效的问题。自动模式等待工作区就绪及片头播完，手动模式就绪后双击进入。修复版已安装，普通启动与重播的原生日志均确认播放并进入工作区；首次绘制与性能对比的验证范围见 [启动进度说明](docs/STARTUP-READINESS.zh-CN.md)。
-
-0.3.5.0 将原生开屏升级为 1080p／60 fps，保持 5.2 秒片头与 9 秒循环；源人物视频仍是 30 fps，具体测试结果和限制见 [启动进度说明](docs/STARTUP-READINESS.zh-CN.md#60-fps-版本与验收)。
-
-当前原生源码 0.3.6.0 另补充错误/超时恢复入口：仅在未就绪且遇到故障或等待超过 30 秒时显示“重试检查”和“使用原生界面”，后者关闭主题并清理开屏，不绕过真实就绪判断。该维护修复通过独立浏览器回归，尚未重新构建或实机安装；现有稳定下载包保持不变。
-
-0.3.2.0 增加可复跑的动画制作脚本与构建校验：工程或素材变化、视频缺失或损坏时，构建会重新生成并核对来源版本，失败则停止打包。视频继续随包提供，用户安装和日常启动都不需要渲染工具。制作入口与依赖见 [构建时生成开屏](docs/STARTUP-READINESS.zh-CN.md#构建时生成开屏)。
-
-构建、兼容范围和实际验证状态见 [原生集成说明](docs/NATIVE-INTEGRATION.zh-CN.md)。原启动器继续可用，两种加载方式分别选择。
-
-## 从源码构建完整桑多涅版本
-
-**本仓库已包含桑多涅主题素材。** 源码不携带预编译 EXE/DLL 或 Node 二进制。
-
-准备官方 Node.js 24 LTS Windows x64 和配套 LICENSE。可以正常安装 Node，或把官方 ZIP 中的 `node.exe` 和 `LICENSE` 放入 `runtime/`，然后执行：
-
-```powershell
-.\Build-From-Source.ps1
-.\Setup.ps1
+```sh
+git clone --branch macos/original-engine-integration https://github.com/teddy7286317/sandrone-codex-Mac-Dev.git
+cd sandrone-codex-Mac-Dev
+node --test tests/*.test.mjs
+node engine/macos-skin.mjs --check
+zsh Build-Mac.command
 ```
 
-也可双击 `从源码构建.cmd`。使用 Windows 自带 .NET Framework 编译器，生成启动器、窗口组件、离线预览、标准主题包和完整性清单；不需要 npm 或 Python。修改代码或素材后重新构建，不要绕过摘要检查。
+產物為 `dist/Sandrone-ChatGPT-0.3.4-Mac-Test.app`。已存在時建置會拒絕覆蓋。產物採本機臨時簽名，未經 Apple 公證；若系統阻擋，請回報，不要關閉系統防護。
 
-## 兼容与安全边界
+**Node 仍是外部依賴**，啟動器會記住建置時的 Node 路徑；刪除或搬動該 Node 版本後需重新建置。應用包本身不依賴原始碼資料夾位置。
 
-- 本机验证：Windows 11 x64、官方 Codex 26.1016.8622.0；发行版 0.6.1，主题扩展 0.5.3。
-- 依赖官方 UI 结构；其他版本、首次冷启动、真实聊天/模型/MCP/审批仍需使用者验证。
-- 官方与主题入口需要手动退出切换，不保证同时运行。
-- 固定调试端口 19337 只允许回环，并核验进程与 browser ID；本机其他进程仍可能访问它。
-- 不修改官方安装或系统防护，不自动登录、不上传凭据、不迁移聊天或 MCP 配置。
-- 本地编译启动器未做商业签名；核对发布文件 SHA256，不要关闭系统防护。
-- 使用后的 profile/、state/、machine.json 不应重新打包或提交。
+## 啟動與 Dock
 
-## 社区衍生项目
+1. 儲存工作，停止舊的主題載入器，並用 Cmd+Q 完全退出 ChatGPT。
+2. 把建置好的 `.app` 放在固定位置，再拖到 Dock。
+3. 從這個啟動器開啟，等待主題與開屏載入。官方應用已在運行時不會強制關閉或接管它。
+4. 使用啟動器的狀態視窗或 Dock 選單管理主題。
 
-- [Custom Codex UI](https://github.com/WyEhNf/customed_codexui)：基于本项目的 UI 与同窗开屏实现，扩展为九角色主题与内置角色切换。衍生项目的 README 已保留对本项目的来源说明与致谢；由衍生项目独立维护。
+詳見 [Dock、還原與移除說明](macos/DOCK-LAUNCHER.md)。需要先看外觀，可執行 `./macos/preview.command`，但離線預覽不能代替真實客戶端驗收。
 
-## 许可与鸣谢
+## 還原與移除
 
-**项目代码：MIT。** 上游 [Codex Dream Skin](https://github.com/Fei-Away/Codex-Dream-Skin) 使用 MIT，保留其许可证与来源记录。
+先停用主題、停止並清理載入器，儲存工作後完全退出 ChatGPT，再由官方圖示啟動即可恢復官方外觀。
 
-**桑多涅名称、角色图片、视频、签名参考及衍生素材保留原权利人的权利，不适用代码的 MIT 许可。** 本项目不声称拥有这些素材，也不提供额外的素材再授权。见 [素材权利说明](ASSET-LICENSE.md) 和 assets/PROVENANCE.json。
+移除本工具時，在停止載入器後移除其 Dock 捷徑及獨立 `.app`。本工具不需要刪除官方聊天、登入資料或 Keychain。完整步驟與清理未確認時的處理見 [還原與移除](macos/DOCK-LAUNCHER.md#完整還原至官方使用方式)。
 
-这是非官方同人主题，与 OpenAI、HoYoverse/COGNOSPHERE 无官方隶属或背书关系。
+## 驗證狀態
+
+使用者已確認對話與輸入框可讀、開屏重播、停用、重新啟用正常，首頁及窄視窗對話可接受，並確認 0.3.1 修正 Chat／Work 原白底淺字問題。最新回報為目前版本「看起來是可以了」；這不擴大為所有待測項目全面通過。
+
+0.3.4 開發紀錄包括 72 項 Node 測試、5 種 Cocoa 隔離情境、Chrome 合成頁與打包簽名檢查。這些是程式與隔離環境檢查，不代表每個真實畫面、錯誤恢復與媒體生命週期都已驗收。
+
+- [逐項手動驗收](macos/MANUAL-ACCEPTANCE.md)
+- [驗證紀錄與待測範圍](macos/VALIDATION.md)
+- [Mac 開發與診斷說明](macos/README.md)
+- [啟動時間線與限制](macos/STARTUP-TIMING.md)
+- [早期載入架構研究](macos/research/early-loading/README.md)
+
+## 來源與授權
+
+感謝原作者 [fengye337](https://github.com/fengye337/sandrone-codex)、Codex Dream Skin，以及 PR #6 的 Mac 原型作者 wsqUsaqi537。來源與改編範圍見 [UPSTREAM.md](macos/UPSTREAM.md) 及 [PR6-SOURCE.md](macos/PR6-SOURCE.md)。
+
+程式碼遵循 [MIT 授權](LICENSE)。桑多涅角色圖片、影片、簽名與衍生素材保留原權利人的權利，**不適用程式碼的 MIT 素材再授權**，詳見 [素材權利說明](ASSET-LICENSE.md) 與 [第三方聲明](THIRD-PARTY-NOTICES.md)。
+
+本專案與 OpenAI、HoYoverse／COGNOSPHERE 無官方隸屬或背書關係，不包含官方客戶端、帳號或模型額度。
+
+[原版 Windows 說明](README-Windows.md) 保留於本倉庫，Windows 下載及原生附加包不能用作 Mac 安裝包。
