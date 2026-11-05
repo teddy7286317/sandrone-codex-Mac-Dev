@@ -1,3 +1,5 @@
+> **macOS 移植測試版**：離線整合、預覽與手動驗收步驟見 [macos/README.md](macos/README.md)。原版引擎保持沿用，撤回配色保持停用；真實 ChatGPT/Work 介面仍待使用者驗收。下方為上游 Windows 說明。
+
 # Sandrone Codex · 桑多涅人偶工坊
 
 为 **Windows 11 x64 上的官方 Codex 桌面客户端**制作的非官方桑多涅主题与启动器。

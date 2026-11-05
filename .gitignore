@@ -15,3 +15,5 @@ machine.json
 integrity.json
 dist/
 __pycache__/
+
+.DS_Store

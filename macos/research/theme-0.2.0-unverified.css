@@ -1,0 +1,94 @@
+/* Sandrone macOS: native surface colors with artwork painted behind content. */
+html[data-sandrone-mac-theme="0.2.0"],
+html[data-sandrone-mac-theme="0.2.0"] body,
+html[data-sandrone-mac-theme="0.2.0"] #root {
+ color-scheme:dark !important;
+ --color-background-primary:#0c1016 !important;
+ --color-background-secondary:#111923 !important;
+ --color-background-tertiary:#1c2735 !important;
+ --color-background-surface:#111923 !important;
+ --color-background-panel:#111923 !important;
+ --color-surface-primary:#0c1016 !important;
+ --color-surface-secondary:#111923 !important;
+ --color-surface-tertiary:#1c2735 !important;
+ --color-background-composer-primary:#151e2a !important;
+ --color-background-composer-surface:#151e2a !important;
+ --color-background-composer-action-bar:#151e2a !important;
+ --color-background-user-message:#263345 !important;
+ --color-text-user-message:#f4eddd !important;
+ --color-text:#ebe3d1 !important;
+ --color-text-primary:#ebe3d1 !important;
+ --color-text-secondary:#c2c8cf !important;
+ --color-text-tertiary:#aeb9c5 !important;
+ --color-text-placeholder:#aeb9c5 !important;
+ --color-text-inverse:#131b26 !important;
+ --color-text-inverted:#131b26 !important;
+ --color-border:#394453 !important;
+ --color-border-default:#394453 !important;
+ --color-border-subtle:#2b3542 !important;
+ --color-border-primary:#9e8256 !important;
+ --color-background-mode-toggle-track:#111923 !important;
+ --color-background-mode-toggle-selected:#263345 !important;
+ --color-background-primary-solid:#ddbb79 !important;
+ --color-text-primary-solid:#131b26 !important;
+ --color-background-primary-ghost-hover:#263345 !important;
+ --codex-theme-accent-background:#ddbb79 !important;
+ --codex-theme-accent-text:#ddbb79 !important;
+ --codex-titlebar-tint:#0c1016 !important;
+ --bg-primary:#0c1016 !important;
+ --bg-secondary:#111923 !important;
+ --bg-tertiary:#1c2735 !important;
+ --bg-elevated-primary:#151e2a !important;
+ --bg-elevated-secondary:#202b3a !important;
+ --text-primary:#ebe3d1 !important;
+ --text-secondary:#c2c8cf !important;
+ background-color:#0c1016 !important;
+ color:#ebe3d1 !important;
+}
+html[data-sandrone-mac-theme="0.2.0"] [data-sandrone-mac-surface] {
+ --color-background-primary:transparent !important;
+ --bg-primary:transparent !important;
+ background-color:#0c1016 !important;
+ background-image:linear-gradient(90deg,#0c1016 0%,rgba(12,16,22,.94) 32%,rgba(12,16,22,.70) 60%,rgba(12,16,22,.26) 100%),var(--sandrone-mac-art) !important;
+ background-repeat:no-repeat !important;
+ background-position:center,right center !important;
+ background-size:cover,auto 100% !important;
+ background-attachment:local !important;
+ color:#ebe3d1 !important;
+}
+/* Keep the app's content above the background; never add a foreground art panel. */
+html[data-sandrone-mac-theme="0.2.0"] [data-sandrone-mac-surface] > :not([role="dialog"]):not([role="menu"]) {
+ background-color:transparent;
+}
+html[data-sandrone-mac-theme="0.2.0"] [data-sandrone-mac-sidebar] {
+ background:#0d131c !important;
+ border-inline-end:1px solid #514734 !important;
+ color:#ebe3d1 !important;
+}
+html[data-sandrone-mac-theme="0.2.0"] :is([role="dialog"],[role="alertdialog"],[role="menu"],[role="listbox"],[role="tooltip"]) {
+ background:#151e2a !important;color:#ebe3d1 !important;
+ border-color:#766246 !important;
+ box-shadow:0 12px 40px #0008;
+}
+html[data-sandrone-mac-theme="0.2.0"] :is(form:has(textarea),form:has([contenteditable="true"]),[class*="_previewComposer_"]) {
+ background:#151e2a !important;color:#ebe3d1 !important;
+ border:1px solid #9e8256 !important;
+ box-shadow:0 8px 28px #0005 !important;
+}
+html[data-sandrone-mac-theme="0.2.0"] :is(textarea,[contenteditable="true"],input) {
+ color:#ebe3d1 !important;caret-color:#ddbb79;
+}
+html[data-sandrone-mac-theme="0.2.0"] :is(textarea,input)::placeholder {color:#aeb9c5 !important;}
+html[data-sandrone-mac-theme="0.2.0"] :is(pre,[data-message-author-role],[class*="_userMessage_"] > *) {
+ background-color:#101721 !important;color:#ebe3d1;
+ border-radius:12px;
+}
+html[data-sandrone-mac-theme="0.2.0"] :is(a,button):focus-visible {
+ outline:2px solid #ddbb79 !important;outline-offset:3px;
+}
+html[data-sandrone-mac-theme="0.2.0"] [data-sandrone-mac-sidebar] button:hover {
+ background-color:#202b3a !important;
+}
+@media(max-width:850px) {
+ html[data-sandrone-mac-theme="0.2.0"] [data-sandrone-mac-surface] {background-image:none !important;}
+}
