@@ -6,7 +6,9 @@
 
 代理未啟動、退出、連線或截取受限 ChatGPT 介面；所有瀏覽器測試使用獨立 headless Chrome 與合成頁面。`macos/audit-current.mjs`、正式載入器與控制命令必須由使用者手動執行。不要用它們繞過 Computer Use 限制。
 
-最新測試及限制見 [macos/VALIDATION.md](macos/VALIDATION.md)，手動步驟見 [macos/README.md](macos/README.md)，上游差異見 [macos/UPSTREAM.md](macos/UPSTREAM.md)。**實機驗收尚未完成，不得宣稱完整移植已完成。**
+本輪使用者實機回報：對話畫面與輸入框可讀，開屏重播、停用及重新啟用均正常。這四項記為使用者實機確認通過；未附畫面、診斷檔或量測數據，不推定首頁、設定、選單、程式碼、窄視窗、普通啟動、跳過、資源釋放或效能已驗收。代理未存取受限介面。
+
+最新測試及限制見 [macos/VALIDATION.md](macos/VALIDATION.md)，手動步驟見 [macos/README.md](macos/README.md)，上游差異見 [macos/UPSTREAM.md](macos/UPSTREAM.md)。**僅部分實機驗收通過；其餘項目仍待測，不得宣稱全面通過或完整移植已完成。**
 
 以下為歷史交接，描述的是舊來源目錄當時的狀態；若與上述狀態不同，以本輪文件為準。
 

@@ -1,4 +1,4 @@
-> **macOS 移植測試版**：離線整合、預覽與手動驗收步驟見 [macos/README.md](macos/README.md)。原版引擎保持沿用，撤回配色保持停用；真實 ChatGPT/Work 介面仍待使用者驗收。下方為上游 Windows 說明。
+> **macOS 移植測試版**：離線整合、預覽與手動驗收步驟見 [macos/README.md](macos/README.md)。原版引擎保持沿用，撤回配色保持停用；使用者已確認對話／輸入框可讀及重播、停用、重新啟用正常，其餘實機項目仍待測。下方為上游 Windows 說明。
 
 # Sandrone Codex · 桑多涅人偶工坊
 

@@ -1,6 +1,6 @@
 # Sandrone Mac 0.3.0 離線整合測試版
 
-本輪已實作原版主題、開屏快取介面、Mac 重播入口、封裝與離線預覽。**真實 ChatGPT/Work 介面尚未驗收。** 不代表完整 macOS 移植已完成。
+本輪已實作原版主題、開屏快取介面、Mac 重播入口、封裝與離線預覽。**使用者已實機確認對話與輸入框可讀，開屏重播、停用及重新啟用正常。** 其餘項目仍待測，不代表全面通過或完整 macOS 移植已完成。
 
 原始碼位於真正 fork 的 `macos/original-engine-integration` 分支；上游來源與範圍見 [UPSTREAM.md](UPSTREAM.md)。舊 `../SandroneCodex-Source` 保留不動，請在新資料夾執行以下指令。
 
@@ -105,4 +105,4 @@ node macos/control.mjs enable
 
 ## 驗證邊界
 
-程式測試、離線瀏覽器測試、打包及簽名結果見 [VALIDATION.md](VALIDATION.md)。真正 ChatGPT 首頁／對話／設定、Mac 標題列布局、啟動及主觀流暢度均標記為待驗收。尚未向上游送 PR 或留言。
+程式測試、離線瀏覽器測試、打包及簽名結果見 [VALIDATION.md](VALIDATION.md)。本輪使用者文字回報已確認對話／輸入框可讀性及重播、停用、重新啟用功能。首頁／立繪、設定／選單／程式碼／窄視窗、Mac 標題列布局、普通啟動、跳過／焦點／減少動態效果、資源釋放診斷與流暢度仍未回報實機測試結果。尚未向上游送 PR 或留言。
