@@ -16,3 +16,5 @@ Mac 重播、CSS stylesheet 所有權與清理位於 `engine/macos-ui.mjs`；重
 PR #6 的啟動思路與身分校驗來源繼續記錄於 [PR6-SOURCE.md](PR6-SOURCE.md)。舊前景圖片覆蓋層未納入新執行路徑。`engine/macos-theme.css` 保持停用註解，`macos/research/theme-0.2.0-unverified.css` 只作歷史研究；兩者均不會作為主題 CSS 載入。
 
 上游原生 Windows 附加包的早期 preload 與本機影片播放器不是這個 Mac 移植的一部分。本版使用文件所述的可攜式快取介面；不能援引上游 Windows 原生包的驗收作為 Mac 的效能或功能驗收。
+
+0.3.1 以唯讀安裝包原始碼定位首頁專用 Chat／Work 元件，新增 `engine/macos-controls.css` 與診斷 selector，透過 Mac adapter 附加至原版 stylesheet；原版 native-ui.css 本身未修改。此局部修正不是恢復撤回配色。詳見 [HOME-MODE-TOGGLE.md](HOME-MODE-TOGGLE.md)。

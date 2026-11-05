@@ -10,6 +10,8 @@
 
 最新測試及限制見 [macos/VALIDATION.md](macos/VALIDATION.md)，手動步驟見 [macos/README.md](macos/README.md)，上游差異見 [macos/UPSTREAM.md](macos/UPSTREAM.md)。**僅部分實機驗收通過；其餘項目仍待測，不得宣稱全面通過或完整移植已完成。**
 
+最新追加：使用者確認首頁其他區域與窄視窗對話可讀性可接受，但 Chat／Work 切換鈕白底淺字。0.3.1 以唯讀封裝原始碼定位並新增局部樣式，實機修正效果仍待驗收；設定、模型選單與 `.app` 自動開屏繼續待測。參見 [macos/HOME-MODE-TOGGLE.md](macos/HOME-MODE-TOGGLE.md)。原版引擎及撤回 CSS 保持不動。
+
 以下為歷史交接，描述的是舊來源目錄當時的狀態；若與上述狀態不同，以本輪文件為準。
 
 ---

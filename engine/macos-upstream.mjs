@@ -6,6 +6,7 @@ import {openingAssets} from './assets.mjs';
 import {prepareOpening,showOpening,releaseOpening} from './opening-client.mjs';
 import {removeNativeUi,setStartupPhase} from './renderer.mjs';
 import {installMacUi,removeMacUi} from './macos-ui.mjs';
+import {modeToggleAuditEntries} from './macos-controls.mjs';
 const root=new URL('../',import.meta.url);
 const contract=JSON.parse(await fs.readFile(new URL('vendor/dream-skin/windows/assets/selectors.json',root),'utf8'));
 export const call=(fn,...args)=>`(${fn.toString()})(${args.map(x=>JSON.stringify(x)).join(',')})`;
@@ -14,7 +15,7 @@ export function evaluateFor(session){if(!evaluators.has(session))evaluators.set(
 
 export function auditSurface(entries) {
  // Allowlisted geometry, counts and colors only: no text, HTML, values or URLs.
- const describe=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {width:Math.round(r.width),height:Math.round(r.height),inViewport:r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight,background:s.backgroundColor,color:s.color,opacity:s.opacity,display:s.display,visibility:s.visibility};};
+ const describe=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {width:Math.round(r.width),height:Math.round(r.height),inViewport:r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight,background:s.backgroundColor,color:s.color,opacity:s.opacity,display:s.display,visibility:s.visibility,borderColor:s.borderColor,outlineColor:s.outlineColor,outlineStyle:s.outlineStyle,outlineWidth:s.outlineWidth,outlineOffset:s.outlineOffset,pressed:e.getAttribute?.('aria-pressed')??null,focusVisible:e.matches?.(':focus-visible')??false,hovered:e.matches?.(':hover')??false};};
  const visible=e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return r.width>0&&r.height>0&&r.right>0&&r.bottom>0&&r.x<innerWidth&&r.y<innerHeight&&s.display!=='none'&&s.visibility!=='hidden'&&s.contentVisibility!=='hidden'&&Number(s.opacity)!==0;};
  const matches=entries.map(({key,selector,tier,scope})=>{
   const elements=Array.from(document.querySelectorAll(selector)),active=elements.filter(e=>!e.closest('[data-app-shell-active-page="false"]')),shown=active.filter(visible);
@@ -28,11 +29,11 @@ export function auditSurface(entries) {
   skin:document.documentElement.getAttribute('data-dream-skin'),opening:{stage:window.__SANDRONE_OPENING_STATE__?.stage??null,reason:window.__SANDRONE_OPENING_STATE__?.reason??null,cached:Boolean(cache&&!cache.disposed),videos:[cache?.color,cache?.trace].filter(Boolean).map(v=>({paused:v.paused,readyState:v.readyState,width:v.videoWidth,height:v.videoHeight,hasSource:Boolean(v.getAttribute('src'))}))},replay:{present:Boolean(document.getElementById('sandrone-mac-replay')),hidden:document.getElementById('sandrone-mac-replay')?.hidden??true}};
 }
 export async function prepareOriginalTheme({opening=true}={}){
- const [loaded,css,assets]=await Promise.all([loadPayload(fileURLToPath(new URL('themes/sandrone',root))),fs.readFile(new URL('engine/native-ui.css',root),'utf8'),opening?openingAssets():null]);
- return {loaded,css,assets};
+ const [loaded,nativeCss,controlsCss,assets]=await Promise.all([loadPayload(fileURLToPath(new URL('themes/sandrone',root))),fs.readFile(new URL('engine/native-ui.css',root),'utf8'),fs.readFile(new URL('engine/macos-controls.css',root),'utf8'),opening?openingAssets():null]);
+ return {loaded,css:nativeCss+'\n'+controlsCss,assets};
 }
 export async function auditOriginalTargets(session){
- const entries=[...contract.selectors,{key:'code',selector:'pre,code',tier:'L2',scope:'thread'},{key:'input',selector:'textarea,[contenteditable="true"]',tier:'L2',scope:'home+thread'}];
+ const entries=[...contract.selectors,...modeToggleAuditEntries,{key:'code',selector:'pre,code',tier:'L2',scope:'thread'},{key:'input',selector:'textarea,[contenteditable="true"]',tier:'L2',scope:'home+thread'}];
  return session.evaluate(call(auditSurface,entries));
 }
 export async function removeOriginalTheme(session){

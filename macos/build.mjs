@@ -5,7 +5,7 @@ import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 const root=fileURLToPath(new URL('../',import.meta.url));
-const version='0.3.0',target=path.join(root,`dist/Sandrone-ChatGPT-${version}-Mac-Test.app`);
+const version='0.3.1',target=path.join(root,`dist/Sandrone-ChatGPT-${version}-Mac-Test.app`);
 if(process.platform!=='darwin')throw new Error('Build requires macOS');
 try{await access(target);throw new Error('Output already exists; it was not overwritten: '+target);}catch(error){if(error.code!=='ENOENT')throw error;}
 execFileSync(process.execPath,[path.join(root,'engine/macos-skin.mjs'),'--check'],{stdio:'inherit'});
@@ -14,10 +14,10 @@ const stage=await mkdtemp(path.join(root,'dist/.mac-build-'));
 try{
  const bundle=path.join(stage,path.basename(target)),contents=path.join(bundle,'Contents'),resources=path.join(contents,'Resources');
  await mkdir(path.join(contents,'MacOS'),{recursive:true});await mkdir(resources,{recursive:true});
- const engines=['assets.mjs','cdp.mjs','renderer.mjs','opening-client.mjs','native-ui.css','macos-skin.mjs','macos-skin-utils.mjs','macos-ui.mjs','macos-upstream.mjs','macos-theme.css'];
+ const engines=['assets.mjs','cdp.mjs','renderer.mjs','opening-client.mjs','native-ui.css','macos-skin.mjs','macos-skin-utils.mjs','macos-ui.mjs','macos-upstream.mjs','macos-theme.css','macos-controls.css','macos-controls.mjs'];
  const mac=['doctor.mjs','paths.mjs','control.mjs','session-record.mjs','audit-current.mjs'];
  const copied=[];
- for(const relative of [...engines.map(f=>'engine/'+f),...mac.map(f=>'macos/'+f),'themes/sandrone','assets','vendor/dream-skin','LICENSE','ASSET-LICENSE.md','THIRD-PARTY-NOTICES.md','macos/README.md','macos/VALIDATION.md','macos/UPSTREAM.md','macos/upstream.json','macos/PR6-SOURCE.md','docs/OPENING-PERFORMANCE.zh-CN.md','docs/STARTUP-READINESS.zh-CN.md']){
+ for(const relative of [...engines.map(f=>'engine/'+f),...mac.map(f=>'macos/'+f),'themes/sandrone','assets','vendor/dream-skin','LICENSE','ASSET-LICENSE.md','THIRD-PARTY-NOTICES.md','macos/README.md','macos/HOME-MODE-TOGGLE.md','macos/VALIDATION.md','macos/UPSTREAM.md','macos/upstream.json','macos/PR6-SOURCE.md','docs/OPENING-PERFORMANCE.zh-CN.md','docs/STARTUP-READINESS.zh-CN.md']){
   const dest=path.join(resources,relative);await mkdir(path.dirname(dest),{recursive:true});await cp(path.join(root,relative),dest,{recursive:true});copied.push(relative);
  }
  await writeFile(path.join(resources,'node-path.txt'),process.execPath);

@@ -1,10 +1,10 @@
-# Sandrone Mac 0.3.0 離線整合測試版
+# Sandrone Mac 0.3.1 離線整合測試版
 
-本輪已實作原版主題、開屏快取介面、Mac 重播入口、封裝與離線預覽。**使用者已實機確認對話與輸入框可讀，開屏重播、停用及重新啟用正常。** 其餘項目仍待測，不代表全面通過或完整 macOS 移植已完成。
+本輪已實作原版主題、開屏快取介面、Mac 重播入口、封裝與離線預覽。**使用者已實機確認對話與輸入框可讀，開屏重播、停用及重新啟用正常。** 首頁其他區域與窄視窗對話可讀性亦回報可接受；首頁 Chat／Work 切換鈕則有白底淺字缺陷，0.3.1 局部修正仍待實機確認。設定、模型選單及 `.app` 自動開屏仍待驗收，不代表全面通過。
 
 原始碼位於真正 fork 的 `macos/original-engine-integration` 分支；上游來源與範圍見 [UPSTREAM.md](UPSTREAM.md)。舊 `../SandroneCodex-Source` 保留不動，請在新資料夾執行以下指令。
 
-撤回的 `engine/macos-theme.css` 保持停用，載入器也不讀取它；歷史研究 CSS 不會打包執行。新的外觀全部來自上游主題 payload 與原版 `native-ui.css`。
+撤回的 `engine/macos-theme.css` 保持停用，載入器也不讀取它；歷史研究 CSS 不會打包執行。基底外觀沿用上游主題 payload 與原版 `native-ui.css`；0.3.1 另載入限定首頁切換鈕的 `macos-controls.css`，修正依據及手動步驟見 [HOME-MODE-TOGGLE.md](HOME-MODE-TOGGLE.md)。
 
 ## 先看離線預覽，不用退出 Work
 
@@ -28,7 +28,7 @@ node engine/macos-skin.mjs --check
 zsh Build-Mac.command
 ```
 
-`--check` 只讀取應用 metadata 並驗證原版主題與素材，不啟動應用、不連線除錯介面。建置使用本機 Node.js 24 與 Xcode Command Line Tools。輸出：`dist/Sandrone-ChatGPT-0.3.0-Mac-Test.app`。已存在時拒絕覆蓋。
+`--check` 只讀取應用 metadata 並驗證原版主題與素材，不啟動應用、不連線除錯介面。建置使用本機 Node.js 24 與 Xcode Command Line Tools。輸出：`dist/Sandrone-ChatGPT-0.3.1-Mac-Test.app`。已存在時拒絕覆蓋。
 
 測試版以目前架構編譯、使用本機臨時簽名，未 Apple 公證；需保留建置時的 Node 路徑。包內包含原版引擎、vendor、主題、素材、來源及授權，**不複製官方 app.asar、帳號、profile、logs 或 state**。包的執行不依賴原始碼資料夾。若只保留 `.app`，包內 `Contents/Resources/macos/` 也包含 control 與 audit-current，可由 Node 手動執行；它們使用相同資料目錄。
 
@@ -105,4 +105,4 @@ node macos/control.mjs enable
 
 ## 驗證邊界
 
-程式測試、離線瀏覽器測試、打包及簽名結果見 [VALIDATION.md](VALIDATION.md)。本輪使用者文字回報已確認對話／輸入框可讀性及重播、停用、重新啟用功能。首頁／立繪、設定／選單／程式碼／窄視窗、Mac 標題列布局、普通啟動、跳過／焦點／減少動態效果、資源釋放診斷與流暢度仍未回報實機測試結果。尚未向上游送 PR 或留言。
+程式測試、離線瀏覽器測試、打包及簽名結果見 [VALIDATION.md](VALIDATION.md)。本輪使用者文字回報已確認對話／輸入框可讀性及重播、停用、重新啟用功能。首頁其他區域與窄視窗對話可讀性已回報可接受；Chat／Work 修正、立繪細節、設定／模型及其他選單／程式碼、Mac 標題列布局、普通啟動、跳過／焦點／減少動態效果、資源釋放診斷與流暢度仍未回報實機測試結果。尚未向上游送 PR 或留言。
