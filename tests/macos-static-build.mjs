@@ -1,0 +1,23 @@
+// Build/inspect AppleScript app only. Never execute the compiled app/loader.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {bundleName,upstream,macVersion} from '../macos/package-info.mjs';
+const root=path.resolve(import.meta.dirname,'..'),bundle=path.join(root,'dist',bundleName('static')),full=path.join(root,'dist',bundleName('full'));
+const args=['Build-Mac-Static.command','--output',bundle,'--icon',path.join(full,'Contents/Resources/Sandrone.icns')];
+execFileSync('/bin/zsh',args,{cwd:root,stdio:'inherit'});
+const resources=path.join(bundle,'Contents/Resources'),manifest=JSON.parse(await fs.readFile(path.join(resources,'build-manifest.json'),'utf8'));
+assert.equal(manifest.kind,'static');assert.equal(manifest.version,macVersion);assert.deepEqual(manifest.upstream,upstream);assert.equal(manifest.visualAcceptance,'PENDING');
+const hash=data=>createHash('sha256').update(data).digest('hex');
+for(const [name,sha]of Object.entries(manifest.hashes))assert.equal(hash(await fs.readFile(path.join(resources,name))),sha);
+for(const name of ['macos-skin.mjs','macos-skin-utils.mjs','renderer.mjs','README.txt'])assert.equal(hash(await fs.readFile(path.join(resources,name))),hash(await fs.readFile(path.join(root,'macos/static',name))));
+for(const name of ['LICENSE','ASSET-LICENSE.md','THIRD-PARTY-NOTICES.md','macos/PR6-SOURCE.md','themes/sandrone/LICENSE.txt','assets/LICENSE.txt'])assert.equal(hash(await fs.readFile(path.join(resources,name))),hash(await fs.readFile(path.join(root,name))));
+const plist=JSON.parse(execFileSync('/usr/bin/plutil',['-convert','json','-o','-',path.join(bundle,'Contents/Info.plist')],{encoding:'utf8'}));assert.equal(plist.CFBundleIdentifier,'local.sandrone.launcher');assert.equal(plist.CFBundleShortVersionString,macVersion);
+const receiptBefore=hash(await fs.readFile(path.join(resources,'build-manifest.json')));
+assert.throws(()=>execFileSync('/bin/zsh',args,{cwd:root,stdio:'pipe'}));
+assert.equal(hash(await fs.readFile(path.join(resources,'build-manifest.json'))),receiptBefore,'existing bundle remains intact');
+const names=await fs.readdir(resources,{recursive:true});assert.ok(!names.some(name=>/(^|\/)(logs|state|profile|research|tests)(\/|$)|app\.asar$/.test(name)));
+execFileSync('/usr/bin/codesign',['--verify','--deep','--strict',bundle]);
+console.log(JSON.stringify({pass:true,scope:'static package compile and inspection only; app never launched',checks:['workspace-output','original-static-entry-and-renderer','source-and-media-receipts','licenses-and-attribution','baseline-version-label','existing-output-refusal','codesign-strict']}));

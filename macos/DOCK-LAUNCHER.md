@@ -1,10 +1,10 @@
-# Dock 啟動、還原與移除（0.3.4 本地測試包）
+# Dock 啟動、還原與移除（0.3.5 本地測試包）
 
 這是獨立的桑多涅啟動器，不是官方插件，也不替換 ChatGPT。**日常使用不需要 Terminal 持續開著。** 主題與開屏會晚於官方視窗載入；只有從桑多涅啟動器啟動的本次程序才嘗試套用。**從官方 ChatGPT 圖示啟動不會自動套主題。** 本版仍待手動實機驗收，沒有公開發布。
 
 ## 放進 Dock
 
-1. 保留目前可用的舊包。找到 `dist/Sandrone-ChatGPT-0.3.4-Mac-Test.app`，先把新包放到打算長期保留的位置，例如 Finder 的個人「應用程式」資料夾；本輪不自動安裝。
+1. 保留目前可用的舊包。找到 `dist/Sandrone-ChatGPT-0.7.0-3a4f2cb-Mac-0.3.5-full-Test.app`，先把新包放到打算長期保留的位置，例如 Finder 的個人「應用程式」資料夾；本輪不自動安裝。
 2. 從該固定位置將新包拖到 Dock 的應用程式區。也可啟動後在該圖示選「選項 → 保留在 Dock」。不要把官方 ChatGPT 圖示當成此啟動器。
 3. 完成目前 Work 工作、儲存內容，手動 Cmd+Q 完全退出 ChatGPT。若有舊 Terminal 載入器，先 Ctrl+C 等待清理；若是舊 `.app`，先停用主題、手動退出 ChatGPT，再結束舊載入器。不要同時運行新舊載入器。
 4. 點 Dock 中的桑多涅啟動器。它開啟自己的狀態視窗，並從 baseline 流程啟動 ChatGPT。這條路徑不開 Terminal、不開 early-document、不更改官方檔案或登入資料。
@@ -43,7 +43,7 @@ Dock 右鍵另提供顯示視窗、重播、停用、重新啟用及停止。按
 完成上述還原、確定兩個應用及舊載入器都已結束後：
 
 1. 從 Dock 選「選項 → 從 Dock 移除」。這只移除 Dock 捷徑。
-2. 將你放置的 `Sandrone-ChatGPT-0.3.4-Mac-Test.app` 移至垃圾桶。舊版包和原始碼是否保留，由你決定；不要在仍有載入器運行時刪除它正在使用的檔案。
+2. 將你放置的 `Sandrone-ChatGPT-0.7.0-3a4f2cb-Mac-0.3.5-full-Test.app` 移至垃圾桶。舊版包和原始碼是否保留，由你決定；不要在仍有載入器運行時刪除它正在使用的檔案。
 3. 可選：先備份想保留的診斷，再用 Finder「前往資料夾」檢視 `~/Library/Application Support/SandroneMacDev/`，移除此工具的資料夾。它含本工具的 state／logs；不是官方聊天或登入資料。若使用自訂 `SANDRONE_DATA_DIR`，只處理你指定的工具資料夾。
 4. 保留 `/Applications/ChatGPT.app`、官方帳號資料、Keychain，以及其他工具需要的 Node.js。本工具沒有安裝登入項目、LaunchAgent、系統服務或官方包修改，不需要移除這些系統項目。
 

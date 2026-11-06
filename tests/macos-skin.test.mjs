@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { appIsRunning, browserIdFromStderr, pageDebuggerUrl } from '../engine/macos-skin-utils.mjs';
+import { appIsRunning, browserIdFromStderr, pageDebuggerUrl } from '../macos/static/macos-skin-utils.mjs';
 
 test('recognizes only the main ChatGPT process', () => {
  const app = '/Applications/ChatGPT.app/Contents/MacOS/ChatGPT';

@@ -2,8 +2,14 @@
   "repository": "https://github.com/fengye337/sandrone-codex",
   "fork": "https://github.com/teddy7286317/sandrone-codex-Mac-Dev",
   "branch": "main",
-  "commit": "dfea82e39d9d4a42524dc9eed3d61204254d0d3a",
-  "checkedDate": "2026-11-05",
-  "forkAndUpstreamMatched": true,
-  "player": "engine/opening-client.mjs + engine/renderer.mjs (unmodified upstream)"
+  "tag": "v0.7.0",
+  "commit": "3a4f2cb11c82269b155d8b75be212432e088bd52",
+  "checkedDate": "2026-11-06",
+  "tagAndMainMatched": true,
+  "mergedPullRequest": 7,
+  "mergeCommit": "3010a498379e609977274ea62cda562b47c50fef",
+  "contributionCommit": "bddd653b541b1ab064dba6686651b1aa7f2602a0",
+  "maintenanceBranch": "macos/0.7.0-regression",
+  "player": "engine/opening-client.mjs + engine/renderer.mjs (unmodified upstream)",
+  "staticContribution": "PR #6, a661a4063b18d6a8b0637e039d4f49f236f3fdbe, wsqUsaqi537"
 }
